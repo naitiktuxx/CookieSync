@@ -10,6 +10,7 @@ const supabaseUrlInput = document.querySelector<HTMLInputElement>("#supabase-url
 const supabaseAnonKeyInput = document.querySelector<HTMLInputElement>("#supabase-anon-key");
 const syncIdInput = document.querySelector<HTMLInputElement>("#sync-id");
 const passphraseInput = document.querySelector<HTMLInputElement>("#passphrase");
+const togglePassphraseButton = document.querySelector<HTMLButtonElement>("#toggle-passphrase");
 const rememberPassphraseInput = document.querySelector<HTMLInputElement>("#remember-passphrase");
 const saveButton = document.querySelector<HTMLButtonElement>("#save-settings");
 const copySyncIdButton = document.querySelector<HTMLButtonElement>("#copy-sync-id");
@@ -25,12 +26,21 @@ const deleteRemoteDataButton = document.querySelector<HTMLButtonElement>("#delet
 const importButton = document.querySelector<HTMLButtonElement>("#import-now");
 const sitePicker = document.querySelector<HTMLElement>("#site-picker");
 const sitesContainer = document.querySelector<HTMLDivElement>("#sites");
+const targetBadgeIcon = document.querySelector<HTMLDivElement>("#target-badge-icon");
 
 let loadedSites: RemoteSiteOption[] = [];
 let selectedDomains = new Set<string>();
 
 setupTargetUi();
 void loadSettings();
+
+// Password toggle helper
+togglePassphraseButton?.addEventListener("click", () => {
+  if (!passphraseInput) return;
+  const isPassword = passphraseInput.type === "password";
+  passphraseInput.type = isPassword ? "text" : "password";
+  togglePassphraseButton.title = isPassword ? "Hide passphrase" : "Show passphrase";
+});
 
 saveButton?.addEventListener("click", () => {
   void saveSettingsFromForm({ silent: false }).catch(() => undefined);
@@ -66,9 +76,24 @@ copySyncIdButton?.addEventListener("click", () => {
     return;
   }
 
+  const origText = copySyncIdButton.querySelector("span")?.textContent ?? "Copy";
+
+  const showSuccessFeedback = () => {
+    const span = copySyncIdButton.querySelector("span");
+    if (span) span.textContent = "Copied!";
+    copySyncIdButton.classList.add("btn-success");
+    setTimeout(() => {
+      if (span) span.textContent = origText;
+      copySyncIdButton.classList.remove("btn-success");
+    }, 2000);
+  };
+
   void navigator.clipboard
     .writeText(syncId)
-    .then(() => addLog("Sync ID copied. Paste it in Firefox.", "success"))
+    .then(() => {
+      showSuccessFeedback();
+      addLog("Sync ID copied. Paste it in Firefox.", "success");
+    })
     .catch(() => {
       syncIdInput?.select();
       addLog("Sync ID selected. Copy it manually.", "warn");
@@ -207,7 +232,17 @@ function addLog(message: string, level: "info" | "success" | "warn" | "error" = 
   if (status) {
     const row = document.createElement("div");
     row.className = `log-line ${level}`;
-    row.textContent = message;
+    
+    const timeSpan = document.createElement("span");
+    timeSpan.style.fontSize = "10px";
+    timeSpan.style.opacity = "0.6";
+    const now = new Date();
+    timeSpan.textContent = `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}]`;
+
+    const textSpan = document.createElement("span");
+    textSpan.textContent = message;
+
+    row.append(timeSpan, textSpan);
     status.prepend(row);
   }
 }
@@ -237,11 +272,11 @@ async function loadSettings(): Promise<void> {
 
 function setupTargetUi(): void {
   if (title) {
-    title.textContent = __BROWSER_TARGET__ === "brave" ? "Brave Cookie Upload" : "Firefox Cookie Import";
+    title.textContent = __BROWSER_TARGET__ === "brave" ? "Brave Cookie Publisher" : "Firefox Cookie Consumer";
   }
 
   if (syncIdLabel) {
-    syncIdLabel.textContent = __BROWSER_TARGET__ === "brave" ? "Sync ID - copy this to Firefox" : "Sync ID from Brave";
+    syncIdLabel.textContent = __BROWSER_TARGET__ === "brave" ? "Sync ID (Copy to Firefox)" : "Sync ID (From Brave)";
   }
 
   if (syncIdInput) {
@@ -270,6 +305,12 @@ function setupTargetUi(): void {
 
   if (sitePicker) {
     sitePicker.hidden = __BROWSER_TARGET__ !== "firefox";
+  }
+
+  if (targetBadgeIcon) {
+    targetBadgeIcon.innerHTML = __BROWSER_TARGET__ === "brave" 
+      ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`
+      : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8a4 4 0 1 0 4 4"/></svg>`;
   }
 
   document.body.dataset.target = __BROWSER_TARGET__;
@@ -329,6 +370,9 @@ function renderVisibleSites(): void {
     const label = document.createElement("label");
     label.className = "site-option";
 
+    const left = document.createElement("div");
+    left.className = "site-option-left";
+
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.value = site.domain;
@@ -343,10 +387,32 @@ function renderVisibleSites(): void {
       updateImportVisibility();
     });
 
-    const text = document.createElement("span");
-    text.textContent = `${site.imported ? "✓ " : ""}${site.domain} (${site.cookieCount})`;
+    const customCheck = document.createElement("span");
+    customCheck.className = "check-custom";
 
-    label.append(checkbox, text);
+    const domainSpan = document.createElement("span");
+    domainSpan.className = "site-domain-text";
+    domainSpan.textContent = site.domain;
+
+    left.append(checkbox, customCheck, domainSpan);
+
+    const right = document.createElement("div");
+    right.className = "site-option-right";
+
+    if (site.imported) {
+      const mark = document.createElement("span");
+      mark.className = "imported-mark";
+      mark.title = "Previously imported";
+      mark.textContent = "✓ ";
+      right.append(mark);
+    }
+
+    const badge = document.createElement("span");
+    badge.className = "cookie-badge";
+    badge.textContent = `${site.cookieCount} cookies`;
+    right.append(badge);
+
+    label.append(left, right);
     sitesContainer.append(label);
   }
   updateSelectAllState();
