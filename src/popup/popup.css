@@ -54,11 +54,12 @@ body[data-target="firefox"] {
   --bg-input: rgba(255, 255, 255, 0.05);
   --border-card: rgba(255, 255, 255, 0.12);
   --border-input: rgba(255, 255, 255, 0.18);
-  --border-focus: #264a50;
-  --target-accent: #264a50;
-  --target-accent-hover: #335e66;
-  --target-gradient: linear-gradient(135deg, #264a50, #1a383d);
-  --target-glow: rgba(38, 74, 80, 0.4);
+  --border-focus: #61c9cc;
+  --target-accent: #61c9cc;
+  --target-accent-disabled: #264a50;
+  --target-accent-hover: #75d4d7;
+  --target-gradient: linear-gradient(135deg, #61c9cc, #46a7aa);
+  --target-glow: rgba(97, 201, 204, 0.4);
 }
 
 * {
@@ -681,6 +682,26 @@ body[data-target="firefox"] #import-now,
 body[data-target="firefox"] #clear-all-cookies {
   display: flex !important;
   width: 100%;
+}
+
+body[data-target="firefox"] button:disabled,
+body[data-target="firefox"] .btn-hero:disabled,
+body[data-target="firefox"] .btn-primary:disabled {
+  background: #264a50 !important;
+  border-color: #264a50 !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  opacity: 0.85 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+body[data-target="firefox"] .btn-hero:not(:disabled),
+body[data-target="firefox"] .btn-primary:not(:disabled) {
+  background: linear-gradient(135deg, #61c9cc, #46a7aa) !important;
+  border-color: #61c9cc !important;
+  color: #080c14 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 16px rgba(97, 201, 204, 0.35) !important;
 }
 
 /* Hide site-picker and actions when credentials card is expanded, and stretch credentials down */
