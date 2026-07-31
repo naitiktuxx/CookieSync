@@ -528,10 +528,8 @@ button:disabled {
 .last-synced-box {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 4px 8px;
-  font-size: 11px;
+  gap: 4px;
+  font-size: 10px;
   color: var(--text-secondary);
 }
 
@@ -696,7 +694,6 @@ button:disabled {
 
 body[data-target="brave"] #last-synced-box {
   display: flex !important;
-  margin-top: auto;
 }
 
 body[data-target="firefox"] #last-synced-box {
@@ -779,6 +776,9 @@ body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
 }
 
 .status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 4px;
 }
 
