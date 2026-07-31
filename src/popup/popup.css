@@ -56,9 +56,9 @@ body[data-target="firefox"] {
 }
 
 body {
-  width: 420px;
-  min-height: 620px;
-  max-height: 750px;
+  width: 430px;
+  min-height: 720px;
+  max-height: 850px;
   color: var(--text-primary);
   background: var(--bg-app);
   font-family: var(--font-sans);
@@ -71,11 +71,11 @@ body {
 main {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: 420px;
-  min-height: 620px;
-  max-height: 750px;
-  padding: 14px;
+  gap: 14px;
+  width: 430px;
+  min-height: 720px;
+  max-height: 850px;
+  padding: 16px;
   background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.5) 0%, var(--bg-app) 80%);
 }
 
@@ -583,8 +583,8 @@ body[data-target="firefox"].sites-loaded main {
   display: flex;
   flex-direction: column-reverse;
   gap: 4px;
-  min-height: 48px;
-  max-height: 68px;
+  min-height: 64px;
+  max-height: 96px;
   overflow-y: auto;
 }
 
