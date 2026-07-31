@@ -631,20 +631,18 @@ button:disabled {
   display: flex;
 }
 
-.sync-keys-card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
 body[data-target="firefox"] #import-now {
   display: flex !important;
   width: 100%;
 }
 
-body.sites-expanded .settings-card,
-body.sites-expanded .sync-keys-card {
+/* Hide site-picker and actions when credentials card is expanded */
+#settings-section:not(.collapsed) ~ #site-picker,
+#settings-section:not(.collapsed) ~ .actions {
+  display: none !important;
+}
+
+body.sites-expanded .settings-card {
   display: none !important;
 }
 
