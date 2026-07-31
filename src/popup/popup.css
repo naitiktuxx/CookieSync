@@ -543,16 +543,12 @@ button:disabled {
 }
 
 /* Target conditional layouts */
-body[data-target="brave"] #save-settings {
+#save-settings {
   display: flex;
 }
 
-body[data-target="firefox"] #save-settings {
-  display: none;
-}
-
 body[data-target="firefox"].sites-loaded .settings-card {
-  display: none;
+  display: block;
 }
 
 body[data-target="firefox"].sites-loaded main {

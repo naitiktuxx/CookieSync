@@ -299,8 +299,8 @@ function setupTargetUi(): void {
     importButton.hidden = __BROWSER_TARGET__ !== "firefox";
   }
 
-  if (saveButton && __BROWSER_TARGET__ === "firefox") {
-    saveButton.hidden = true;
+  if (saveButton) {
+    saveButton.hidden = false;
   }
 
   if (sitePicker) {
