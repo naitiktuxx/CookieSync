@@ -86,17 +86,31 @@ export function toDeletedCookieRecord(cookie: chrome.cookies.Cookie, deletedAt =
 }
 
 function toSetDetails(cookie: SerializableCookie): chrome.cookies.SetDetails {
-  return {
-    url: cookieUrl(cookie),
+  const isHostCookie = cookie.name.startsWith("__Host-");
+  const isSecureCookie = cookie.name.startsWith("__Secure-") || isHostCookie || cookie.secure;
+  const protocol = isSecureCookie ? "https" : "http";
+  const host = cookie.domain.startsWith(".") ? cookie.domain.slice(1) : cookie.domain;
+  const url = `${protocol}://${host}${cookie.path || "/"}`;
+
+  const details: chrome.cookies.SetDetails = {
+    url,
     name: cookie.name,
     value: cookie.value,
-    domain: cookie.domain,
-    path: cookie.path,
-    secure: cookie.secure,
+    path: isHostCookie ? "/" : (cookie.path || "/"),
+    secure: isSecureCookie,
     httpOnly: cookie.httpOnly,
-    sameSite: cookie.sameSite,
     expirationDate: cookie.expirationDate
   };
+
+  if (!isHostCookie && cookie.domain) {
+    details.domain = cookie.domain;
+  }
+
+  if (cookie.sameSite && (cookie.sameSite as string) !== "unspecified") {
+    details.sameSite = cookie.sameSite;
+  }
+
+  return details;
 }
 
 function cookieUrl(cookie: SerializableCookie): string {

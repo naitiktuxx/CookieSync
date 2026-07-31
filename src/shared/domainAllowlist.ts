@@ -16,6 +16,11 @@ export function normalizeDomain(value: string): string | undefined {
   return host || undefined;
 }
 
+const DOMAIN_FAMILIES: Record<string, string[]> = {
+  "youtube.com": ["youtube.com", "google.com", "googleusercontent.com", "gstatic.com"],
+  "google.com": ["google.com", "youtube.com", "googleusercontent.com", "gstatic.com"]
+};
+
 export function cookieMatchesAllowedDomains(cookieDomain: string, allowedDomains: string[]): boolean {
   if (allowedDomains.length === 0) {
     return false;
@@ -26,7 +31,11 @@ export function cookieMatchesAllowedDomains(cookieDomain: string, allowedDomains
     return false;
   }
 
-  return allowedDomains.some(
+  const expandedAllowed = Array.from(
+    new Set(allowedDomains.flatMap((domain) => DOMAIN_FAMILIES[domain] ?? [domain]))
+  );
+
+  return expandedAllowed.some(
     (allowedDomain) => normalizedCookieDomain === allowedDomain || normalizedCookieDomain.endsWith(`.${allowedDomain}`)
   );
 }
