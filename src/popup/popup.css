@@ -696,6 +696,7 @@ button:disabled {
 
 body[data-target="brave"] #last-synced-box {
   display: flex !important;
+  margin-top: auto;
 }
 
 body[data-target="firefox"] #last-synced-box {
