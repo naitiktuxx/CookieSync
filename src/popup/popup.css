@@ -49,10 +49,16 @@ body[data-target="brave"] {
 
 /* Target: Firefox Theme overrides */
 body[data-target="firefox"] {
-  --target-accent: #ff3366;
-  --target-accent-hover: #e02855;
-  --target-gradient: linear-gradient(135deg, #ff3366, #ff0055);
-  --target-glow: rgba(255, 51, 102, 0.3);
+  --bg-app: #0b0d14;
+  --bg-card: #0b0d14;
+  --bg-input: rgba(255, 255, 255, 0.05);
+  --border-card: rgba(255, 255, 255, 0.12);
+  --border-input: rgba(255, 255, 255, 0.18);
+  --border-focus: #264a50;
+  --target-accent: #264a50;
+  --target-accent-hover: #335e66;
+  --target-gradient: linear-gradient(135deg, #264a50, #1a383d);
+  --target-glow: rgba(38, 74, 80, 0.4);
 }
 
 * {
