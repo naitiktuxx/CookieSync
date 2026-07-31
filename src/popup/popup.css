@@ -56,9 +56,9 @@ body[data-target="firefox"] {
 }
 
 body {
-  width: 430px;
-  min-height: 720px;
-  max-height: 850px;
+  width: 440px;
+  min-height: 820px;
+  max-height: 960px;
   color: var(--text-primary);
   background: var(--bg-app);
   font-family: var(--font-sans);
@@ -72,9 +72,9 @@ main {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  width: 430px;
-  min-height: 720px;
-  max-height: 850px;
+  width: 440px;
+  min-height: 820px;
+  max-height: 960px;
   padding: 16px;
   background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.5) 0%, var(--bg-app) 80%);
 }
@@ -629,7 +629,7 @@ body.sites-expanded .picker-card {
 }
 
 body.sites-expanded .sites-list {
-  max-height: 420px;
+  max-height: 520px;
 }
 
 body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
@@ -660,8 +660,8 @@ body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
   display: flex;
   flex-direction: column-reverse;
   gap: 4px;
-  min-height: 64px;
-  max-height: 96px;
+  min-height: 80px;
+  max-height: 120px;
   overflow-y: auto;
 }
 
