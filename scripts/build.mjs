@@ -46,6 +46,7 @@ for (const target of targets) {
   const popupHtml = await readFile(path.join(root, "src", "popup", "popup.html"), "utf8");
   await writeFile(path.join(outdir, "popup.html"), popupHtml.replace("./popup.ts", "./popup.js"));
   await copyFile(path.join(root, "src", "popup", "popup.css"), path.join(outdir, "popup.css"));
+  await copyFile(path.join(root, "src", "assets", "brave-icon.png"), path.join(outdir, "icon.png"));
 
   if (target === "firefox") {
     console.log(`Built firefox extension in dist/firefox`);
