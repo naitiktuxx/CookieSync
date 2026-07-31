@@ -741,6 +741,7 @@ body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
 
 /* Status Console */
 .status-footer {
+  margin-top: auto;
   flex-shrink: 0;
   border: 1px solid var(--border-card);
   border-radius: 10px;
