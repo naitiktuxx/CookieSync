@@ -406,7 +406,7 @@ function setupTargetUi(): void {
   }
 
   if (targetBadgeIcon) {
-    targetBadgeIcon.innerHTML = `<img src="icon.png" width="22" height="22" style="object-fit: contain; display: block;" alt="Cookie Sync" />`;
+    targetBadgeIcon.innerHTML = `<img src="icon.png" alt="Cookie Sync" />`;
   }
 
   document.body.dataset.target = __BROWSER_TARGET__;
