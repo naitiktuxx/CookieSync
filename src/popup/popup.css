@@ -35,10 +35,16 @@
 
 /* Target: Brave Theme overrides */
 body[data-target="brave"] {
-  --target-accent: #ff6b00;
-  --target-accent-hover: #e05d00;
-  --target-gradient: linear-gradient(135deg, #ff8c00, #ff4500);
-  --target-glow: rgba(255, 107, 0, 0.3);
+  --bg-app: #25273a;
+  --bg-card: rgba(43, 45, 66, 0.85);
+  --bg-input: #383a4b;
+  --border-card: rgba(255, 255, 255, 0.1);
+  --border-input: rgba(255, 255, 255, 0.16);
+  --border-focus: #51556d;
+  --target-accent: #51556d;
+  --target-accent-hover: #636783;
+  --target-gradient: linear-gradient(135deg, #51556d, #414559);
+  --target-glow: rgba(81, 85, 109, 0.35);
 }
 
 /* Target: Firefox Theme overrides */
