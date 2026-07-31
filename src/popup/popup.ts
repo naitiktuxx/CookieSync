@@ -354,6 +354,10 @@ function setupTargetUi(): void {
     importButton.hidden = __BROWSER_TARGET__ !== "firefox";
   }
 
+  if (clearAllCookiesButton) {
+    clearAllCookiesButton.hidden = __BROWSER_TARGET__ !== "firefox";
+  }
+
   if (saveButton) {
     saveButton.hidden = false;
   }

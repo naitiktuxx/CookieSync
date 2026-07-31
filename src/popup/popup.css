@@ -667,7 +667,12 @@ button:disabled {
   display: flex;
 }
 
-body[data-target="firefox"] #import-now {
+body[data-target="brave"] #clear-all-cookies {
+  display: none !important;
+}
+
+body[data-target="firefox"] #import-now,
+body[data-target="firefox"] #clear-all-cookies {
   display: flex !important;
   width: 100%;
 }
