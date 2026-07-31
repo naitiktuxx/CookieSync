@@ -31,9 +31,40 @@ const targetBadgeIcon = document.querySelector<HTMLDivElement>("#target-badge-ic
 const settingsSection = document.querySelector<HTMLElement>("#settings-section");
 const settingsHeader = document.querySelector<HTMLDivElement>("#settings-header");
 const settingsStatusBadge = document.querySelector<HTMLSpanElement>("#settings-status-badge");
+const lastSyncedBox = document.querySelector<HTMLElement>("#last-synced-box");
+const lastSyncedText = document.querySelector<HTMLElement>("#last-synced-text");
 
 let loadedSites: RemoteSiteOption[] = [];
 let selectedDomains = new Set<string>();
+
+function updateLastSyncedDisplay(timestamp?: number): void {
+  if (lastSyncedBox) {
+    lastSyncedBox.hidden = __BROWSER_TARGET__ !== "brave";
+  }
+
+  if (!lastSyncedText) {
+    return;
+  }
+
+  if (!timestamp) {
+    lastSyncedText.textContent = "Never";
+    return;
+  }
+
+  const date = new Date(timestamp);
+  const formattedDate = date.toLocaleDateString(undefined, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+  const formattedTime = date.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+
+  lastSyncedText.textContent = `${formattedDate}, ${formattedTime}`;
+}
 
 setupTargetUi();
 void loadSettings();
@@ -227,7 +258,12 @@ for (const button of Array.from(actionButtons)) {
     const direction = button.dataset.direction as SyncDirection;
     addLog("Working...");
     void sendMessage({ type: "sync", direction })
-      .then((response) => addLog(formatResult(response), "success"))
+      .then((response) => {
+        addLog(formatResult(response), "success");
+        if (direction === "push") {
+          updateLastSyncedDisplay(Date.now());
+        }
+      })
       .catch((error) => addLog(String(error.message ?? error), "error"));
   });
 }
@@ -320,6 +356,8 @@ async function loadSettings(): Promise<void> {
         }
       }
     }
+
+    updateLastSyncedDisplay(settings.lastSyncedAt);
   } catch (error) {
     addLog(String(error instanceof Error ? error.message : error), "error");
   }

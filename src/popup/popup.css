@@ -525,6 +525,26 @@ button:disabled {
   gap: 8px;
 }
 
+.last-synced-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.last-synced-label {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.last-synced-text {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
 /* Firefox Site Picker */
 .picker-card {
   display: flex;
@@ -672,6 +692,14 @@ button:disabled {
 /* Target conditional layouts */
 #save-settings {
   display: flex;
+}
+
+body[data-target="brave"] #last-synced-box {
+  display: flex !important;
+}
+
+body[data-target="firefox"] #last-synced-box {
+  display: none !important;
 }
 
 body[data-target="brave"] #clear-all-cookies {
