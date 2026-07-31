@@ -35,7 +35,7 @@
 
 /* Target: Brave Theme overrides */
 body[data-target="brave"] {
-  --bg-app: #25273a;
+  --bg-app: #181926;
   --bg-card: rgba(43, 45, 66, 0.85);
   --bg-input: #383a4b;
   --border-card: rgba(255, 255, 255, 0.1);
