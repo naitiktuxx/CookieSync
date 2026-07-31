@@ -139,12 +139,6 @@ main {
   border-radius: 50%;
   background: #22c55e;
   box-shadow: 0 0 8px #22c55e;
-  animation: pulse-dot 2s infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
 }
 
 #mode-label {
@@ -203,7 +197,6 @@ h1 {
   cursor: pointer;
   user-select: none;
   padding: 2px 0;
-  transition: opacity 0.15s ease;
 }
 
 .card-header.clickable:hover {
@@ -239,7 +232,6 @@ h1 {
 
 .chevron-icon {
   color: var(--text-muted);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .settings-card:not(.collapsed) .card-header.clickable {
@@ -258,27 +250,10 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: 600px;
-  opacity: 1;
-  transform: translateY(0);
-  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              margin 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
 }
 
 .settings-card.collapsed .settings-body {
-  max-height: 0 !important;
-  opacity: 0 !important;
-  transform: translateY(-8px) !important;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  pointer-events: none !important;
-  overflow: hidden !important;
+  display: none !important;
 }
 
 .card-title {
@@ -446,11 +421,6 @@ input::placeholder {
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.18s ease;
-}
-
-.btn:active {
-  transform: scale(0.98);
 }
 
 .btn-full {
@@ -746,33 +716,10 @@ body[data-target="firefox"] .btn-primary:not(:disabled) {
   box-shadow: 0 4px 16px rgba(97, 201, 204, 0.35) !important;
 }
 
-/* Smoothly hide site-picker and actions when credentials card is expanded, avoiding layout reflow lag */
-.actions,
-#site-picker,
-.settings-card,
-.picker-card {
-  will-change: max-height, opacity, transform;
-  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              margin 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
+/* Hide site-picker and actions when credentials card is expanded, and stretch credentials down */
 #settings-section:not(.collapsed) ~ #site-picker,
 #settings-section:not(.collapsed) ~ .actions {
-  max-height: 0 !important;
-  opacity: 0 !important;
-  transform: translateY(6px) !important;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  border-width: 0 !important;
-  overflow: hidden !important;
-  pointer-events: none !important;
-  visibility: hidden !important;
+  display: none !important;
 }
 
 #settings-section:not(.collapsed) {
@@ -789,31 +736,11 @@ body[data-target="firefox"] .btn-primary:not(:disabled) {
 }
 
 body.sites-expanded .settings-card {
-  max-height: 0 !important;
-  opacity: 0 !important;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  border-width: 0 !important;
-  overflow: hidden !important;
-  pointer-events: none !important;
+  display: none !important;
 }
 
 body.sites-expanded .picker-card {
   flex: 1;
-  animation: pickerExpandAnim 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes pickerExpandAnim {
-  0% {
-    opacity: 0.7;
-    transform: translateY(4px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 body.sites-expanded .sites-list {

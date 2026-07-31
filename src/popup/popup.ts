@@ -105,9 +105,7 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
     }
     if (!silent) {
       addLog(rememberPassphrase ? "Settings saved with passphrase." : "Settings saved without passphrase.", "success");
-      setTimeout(() => {
-        settingsSection?.classList.add("collapsed");
-      }, 800);
+      settingsSection?.classList.add("collapsed");
     }
   } catch (error) {
     addLog(String(error instanceof Error ? error.message : error), "error");
@@ -406,7 +404,7 @@ function setupTargetUi(): void {
   }
 
   if (targetBadgeIcon) {
-    targetBadgeIcon.innerHTML = `<img src="icon.png" alt="Cookie Sync" />`;
+    targetBadgeIcon.innerHTML = `<img src="icon.png" width="22" height="22" style="object-fit: contain; display: block;" alt="Cookie Sync" />`;
   }
 
   document.body.dataset.target = __BROWSER_TARGET__;
