@@ -56,9 +56,9 @@ body[data-target="firefox"] {
 }
 
 body {
-  width: 440px;
-  min-height: 820px;
-  max-height: 960px;
+  width: 420px;
+  height: 600px;
+  max-height: 600px;
   color: var(--text-primary);
   background: var(--bg-app);
   font-family: var(--font-sans);
@@ -71,20 +71,23 @@ body {
 main {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  width: 440px;
-  min-height: 820px;
-  max-height: 960px;
-  padding: 16px;
+  gap: 8px;
+  width: 420px;
+  height: 600px;
+  max-height: 600px;
+  padding: 12px;
+  box-sizing: border-box;
   background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.5) 0%, var(--bg-app) 80%);
+  overflow: hidden;
 }
 
 /* App Header */
 .app-header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border: 1px solid var(--border-card);
   border-radius: 12px;
   background: var(--bg-card);
@@ -169,6 +172,10 @@ h1 {
   backdrop-filter: blur(12px);
   padding: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.settings-card {
+  flex-shrink: 0;
 }
 
 .card-header {
@@ -499,6 +506,7 @@ button:disabled {
 
 /* Actions Section */
 .actions {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -508,7 +516,7 @@ button:disabled {
 .picker-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
   min-height: 0;
 }
@@ -518,6 +526,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .check-button {
@@ -536,6 +545,7 @@ button:disabled {
 
 .search-wrap {
   width: 100%;
+  flex-shrink: 0;
 }
 
 .sites-list {
@@ -629,7 +639,7 @@ body.sites-expanded .picker-card {
 }
 
 body.sites-expanded .sites-list {
-  max-height: 520px;
+  max-height: none !important;
 }
 
 body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
@@ -638,14 +648,15 @@ body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
 
 /* Status Console */
 .status-footer {
+  flex-shrink: 0;
   border: 1px solid var(--border-card);
   border-radius: 10px;
   background: rgba(2, 6, 23, 0.7);
-  padding: 8px 10px;
+  padding: 6px 10px;
 }
 
 .status-header {
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .status-title {
@@ -660,8 +671,8 @@ body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
   display: flex;
   flex-direction: column-reverse;
   gap: 4px;
-  min-height: 80px;
-  max-height: 120px;
+  min-height: 32px;
+  max-height: 48px;
   overflow-y: auto;
 }
 
