@@ -79,6 +79,10 @@ async function handleMessage(message: unknown): Promise<unknown> {
     return engine.clearDomainCookies(message.domain);
   }
 
+  if (message.type === "clear-all-local-cookies") {
+    return engine.clearAllLocalCookies();
+  }
+
   return engine.sync(message.direction);
 }
 
@@ -92,6 +96,7 @@ function isMessage(
   | { type: "get-remote-sites" }
   | { type: "delete-remote-data" }
   | { type: "clear-domain-cookies"; domain: string }
+  | { type: "clear-all-local-cookies" }
   | { type: "import-domains"; domains: string[] } {
   if (!message || typeof message !== "object") {
     return false;
@@ -114,6 +119,7 @@ function isMessage(
     candidate.type === "get-settings" ||
     candidate.type === "get-remote-sites" ||
     candidate.type === "delete-remote-data" ||
+    candidate.type === "clear-all-local-cookies" ||
     (candidate.type === "clear-domain-cookies" && typeof candidate.domain === "string") ||
     (candidate.type === "import-domains" && Array.isArray(candidate.domains)) ||
     (candidate.type === "save-settings" &&

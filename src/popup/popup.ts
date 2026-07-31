@@ -23,6 +23,7 @@ const status = document.querySelector<HTMLDivElement>("#status");
 const actionButtons = document.querySelectorAll<HTMLButtonElement>("[data-direction]");
 const uploadButton = document.querySelector<HTMLButtonElement>("#upload-now");
 const deleteRemoteDataButton = document.querySelector<HTMLButtonElement>("#delete-remote-data");
+const clearAllCookiesButton = document.querySelector<HTMLButtonElement>("#clear-all-cookies");
 const importButton = document.querySelector<HTMLButtonElement>("#import-now");
 const sitePicker = document.querySelector<HTMLElement>("#site-picker");
 const sitesContainer = document.querySelector<HTMLDivElement>("#sites");
@@ -154,6 +155,26 @@ deleteRemoteDataButton?.addEventListener("click", () => {
         return;
       }
       addLog("No server row was deleted. Check Supabase DELETE policy.", "warn");
+    })
+    .catch((error) => addLog(String(error.message ?? error), "error"));
+});
+
+clearAllCookiesButton?.addEventListener("click", () => {
+  if (!window.confirm("Are you sure you want to clear ALL local cookies in this browser?")) {
+    addLog("Clear all cancelled.", "warn");
+    return;
+  }
+
+  addLog("Clearing all local cookies...");
+  void sendMessage({ type: "clear-all-local-cookies" })
+    .then((response) => {
+      const result = response as { removedCount: number };
+      selectedDomains.clear();
+      for (const site of loadedSites) {
+        site.imported = false;
+      }
+      addLog(`Cleared ${result.removedCount} local cookies.`, "success");
+      renderVisibleSites();
     })
     .catch((error) => addLog(String(error.message ?? error), "error"));
 });

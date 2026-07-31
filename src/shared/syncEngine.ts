@@ -1,4 +1,4 @@
-import { applyCookieRecords, cookieKey, cookieSiteDomain, readCookieRecords, removeDomainCookies, toCookieRecord, toDeletedCookieRecord } from "./cookies";
+import { applyCookieRecords, clearAllLocalCookies, cookieKey, cookieSiteDomain, readCookieRecords, removeDomainCookies, toCookieRecord, toDeletedCookieRecord } from "./cookies";
 import { decryptJson, encryptJson } from "./crypto";
 import { cookieMatchesAllowedDomains, normalizeDomain } from "./domainAllowlist";
 import { SupabaseCookieStore } from "./supabaseClient";
@@ -171,6 +171,18 @@ export class CookieSyncEngine {
     }
 
     return this.push(settings, deviceId, store);
+  }
+
+  async clearAllLocalCookies(): Promise<{ removedCount: number }> {
+    const settings = await this.loadSettings();
+    const removedCount = await clearAllLocalCookies();
+    await this.saveSettings({
+      ...settings,
+      importedDomains: [],
+      cookieLedger: undefined,
+      lastSyncedAt: undefined
+    });
+    return { removedCount };
   }
 
   async clearDomainCookies(domain: string): Promise<{ domain: string; removedCount: number }> {

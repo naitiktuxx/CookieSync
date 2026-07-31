@@ -63,6 +63,33 @@ export async function removeDomainCookies(domain: string): Promise<number> {
   return removedCount;
 }
 
+export async function clearAllLocalCookies(): Promise<number> {
+  const cookies = await getAllCookies({});
+  let removedCount = 0;
+
+  for (const cookie of cookies) {
+    try {
+      const isHostCookie = cookie.name.startsWith("__Host-");
+      const isSecureCookie = cookie.name.startsWith("__Secure-") || isHostCookie || cookie.secure;
+      const protocol = isSecureCookie ? "https" : "http";
+      const host = cookie.domain.startsWith(".") ? cookie.domain.slice(1) : cookie.domain;
+      const url = `${protocol}://${host}${cookie.path || "/"}`;
+
+      const details: chrome.cookies.CookieDetails = {
+        url,
+        name: cookie.name,
+        storeId: cookie.storeId
+      };
+      await removeCookie(details);
+      removedCount += 1;
+    } catch (error) {
+      console.warn("Failed to remove cookie", cookie.domain, cookie.name, error);
+    }
+  }
+
+  return removedCount;
+}
+
 export function cookieKey(cookie: SerializableCookie): string {
   return [cookie.domain, cookie.path, cookie.name, cookie.storeId ?? "default"].join("|");
 }
