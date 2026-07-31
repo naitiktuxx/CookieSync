@@ -27,12 +27,19 @@ const importButton = document.querySelector<HTMLButtonElement>("#import-now");
 const sitePicker = document.querySelector<HTMLElement>("#site-picker");
 const sitesContainer = document.querySelector<HTMLDivElement>("#sites");
 const targetBadgeIcon = document.querySelector<HTMLDivElement>("#target-badge-icon");
+const settingsSection = document.querySelector<HTMLElement>("#settings-section");
+const settingsHeader = document.querySelector<HTMLDivElement>("#settings-header");
+const settingsStatusBadge = document.querySelector<HTMLSpanElement>("#settings-status-badge");
 
 let loadedSites: RemoteSiteOption[] = [];
 let selectedDomains = new Set<string>();
 
 setupTargetUi();
 void loadSettings();
+
+settingsHeader?.addEventListener("click", () => {
+  settingsSection?.classList.toggle("collapsed");
+});
 
 // Password toggle helper
 togglePassphraseButton?.addEventListener("click", () => {
@@ -60,8 +67,15 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
 
   try {
     await sendMessage({ type: "save-settings", supabaseUrl, supabaseAnonKey, syncId, passphrase, rememberPassphrase });
+    if (settingsStatusBadge) {
+      settingsStatusBadge.textContent = "Configured ✓";
+      settingsStatusBadge.className = "badge-status configured";
+    }
     if (!silent) {
       addLog(rememberPassphrase ? "Settings saved with passphrase." : "Settings saved without passphrase.", "success");
+      setTimeout(() => {
+        settingsSection?.classList.add("collapsed");
+      }, 800);
     }
   } catch (error) {
     addLog(String(error instanceof Error ? error.message : error), "error");
@@ -264,6 +278,26 @@ async function loadSettings(): Promise<void> {
     }
     if (passphraseInput && settings.rememberPassphrase) {
       passphraseInput.value = settings.syncPassphrase ?? "";
+    }
+
+    const hasSyncId = Boolean(settings.syncId);
+    const hasPassphrase = Boolean(settings.syncPassphrase || passphraseInput?.value.trim());
+    const isConfigured = hasSyncId && hasPassphrase;
+
+    if (settingsSection) {
+      if (isConfigured) {
+        settingsSection.classList.add("collapsed");
+        if (settingsStatusBadge) {
+          settingsStatusBadge.textContent = "Configured ✓";
+          settingsStatusBadge.className = "badge-status configured";
+        }
+      } else {
+        settingsSection.classList.remove("collapsed");
+        if (settingsStatusBadge) {
+          settingsStatusBadge.textContent = "Setup Required";
+          settingsStatusBadge.className = "badge-status setup";
+        }
+      }
     }
   } catch (error) {
     addLog(String(error instanceof Error ? error.message : error), "error");

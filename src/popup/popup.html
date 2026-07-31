@@ -36,77 +36,85 @@
         </div>
       </header>
 
-      <!-- Settings Section -->
+      <!-- Settings Section (Collapsible) -->
       <section class="card settings-card" id="settings-section">
-        <div class="card-header">
+        <div class="card-header clickable" id="settings-header" role="button" tabindex="0" title="Click to toggle credentials panel">
           <span class="card-title">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
-            Supabase & Security Credentials
+            Supabase Credentials
           </span>
+          <div class="card-header-right">
+            <span class="badge-status" id="settings-status-badge">Setup</span>
+            <svg class="chevron-icon" id="settings-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
         </div>
-        <div class="settings-grid">
-          <label class="field-group">
-            <span class="field-label">Supabase URL</span>
-            <div class="input-wrap">
-              <input id="supabase-url" type="url" placeholder="https://project-ref.supabase.co" spellcheck="false" />
-            </div>
-          </label>
-          
-          <label class="field-group">
-            <span class="field-label">Supabase Anon Key</span>
-            <div class="input-wrap">
-              <input id="supabase-anon-key" type="password" autocomplete="off" spellcheck="false" placeholder="eyJhbGci..." />
-            </div>
-          </label>
-
-          <label class="field-group">
-            <span class="field-label" id="sync-id-label">Sync ID</span>
-            <div class="field-row">
+        <div class="settings-body" id="settings-body">
+          <div class="settings-grid">
+            <label class="field-group">
+              <span class="field-label">Supabase URL</span>
               <div class="input-wrap">
-                <input id="sync-id" type="text" autocomplete="off" spellcheck="false" placeholder="Unique sync identifier..." />
+                <input id="supabase-url" type="url" placeholder="https://project-ref.supabase.co" spellcheck="false" />
               </div>
-              <button id="copy-sync-id" class="btn btn-secondary btn-icon-text" type="button" title="Copy Sync ID">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-                <span>Copy</span>
-              </button>
-            </div>
-          </label>
+            </label>
+            
+            <label class="field-group">
+              <span class="field-label">Supabase Anon Key</span>
+              <div class="input-wrap">
+                <input id="supabase-anon-key" type="password" autocomplete="off" spellcheck="false" placeholder="eyJhbGci..." />
+              </div>
+            </label>
 
-          <label class="field-group">
-            <span class="field-label">Sync Passphrase</span>
-            <div class="input-wrap has-action">
-              <input id="passphrase" type="password" autocomplete="new-password" placeholder="Enter encryption passphrase..." />
-              <button type="button" class="btn-toggle-password" id="toggle-passphrase" title="Toggle password visibility" tabindex="-1">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-              </button>
-            </div>
-          </label>
+            <label class="field-group">
+              <span class="field-label" id="sync-id-label">Sync ID</span>
+              <div class="field-row">
+                <div class="input-wrap">
+                  <input id="sync-id" type="text" autocomplete="off" spellcheck="false" placeholder="Unique sync identifier..." />
+                </div>
+                <button id="copy-sync-id" class="btn btn-secondary btn-icon-text" type="button" title="Copy Sync ID">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span>Copy</span>
+                </button>
+              </div>
+            </label>
 
-          <label class="check-row">
-            <input id="remember-passphrase" type="checkbox" />
-            <span class="check-custom"></span>
-            <span class="check-text">Remember passphrase on this device</span>
-          </label>
+            <label class="field-group">
+              <span class="field-label">Sync Passphrase</span>
+              <div class="input-wrap has-action">
+                <input id="passphrase" type="password" autocomplete="new-password" placeholder="Enter encryption passphrase..." />
+                <button type="button" class="btn-toggle-password" id="toggle-passphrase" title="Toggle password visibility" tabindex="-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+            </label>
+
+            <label class="check-row">
+              <input id="remember-passphrase" type="checkbox" />
+              <span class="check-custom"></span>
+              <span class="check-text">Remember passphrase on this device</span>
+            </label>
+          </div>
+
+          <button id="save-settings" class="btn btn-primary btn-full" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span>Save Configuration</span>
+          </button>
         </div>
       </section>
-
-      <button id="save-settings" class="btn btn-primary btn-full" type="button">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-          <polyline points="17 21 17 13 7 13 7 21"></polyline>
-          <polyline points="7 3 7 8 15 8"></polyline>
-        </svg>
-        <span>Save Configuration</span>
-      </button>
 
       <!-- Firefox Site Picker Section -->
       <section id="site-picker" class="card picker-card" hidden>
