@@ -631,12 +631,20 @@ button:disabled {
   display: flex;
 }
 
+.sync-keys-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 body[data-target="firefox"] #import-now {
   display: flex !important;
   width: 100%;
 }
 
-body.sites-expanded .settings-card {
+body.sites-expanded .settings-card,
+body.sites-expanded .sync-keys-card {
   display: none !important;
 }
 
