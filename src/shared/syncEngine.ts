@@ -82,6 +82,10 @@ export class CookieSyncEngine {
     const store = new SupabaseCookieStore(storeSettings);
     const existedBefore = Boolean(await store.downloadLatestPayload());
     if (!existedBefore) {
+      await this.saveSettings({
+        ...settings,
+        lastSyncedAt: undefined
+      });
       return { deleted: false, wiped: false, missing: true };
     }
 
@@ -89,8 +93,8 @@ export class CookieSyncEngine {
     if (deleted) {
       await this.saveSettings({
         ...settings,
-        lastSyncedAt: undefined,
-        cookieLedger: undefined
+        cookieLedger: undefined,
+        lastSyncedAt: undefined
       });
       return { deleted: true, wiped: false, missing: false };
     }

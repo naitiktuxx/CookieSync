@@ -173,6 +173,7 @@ deleteRemoteDataButton?.addEventListener("click", () => {
   void sendMessage({ type: "delete-remote-data" })
     .then((response) => {
       const result = response as { deleted?: boolean; wiped?: boolean; missing?: boolean };
+      updateLastSyncedDisplay(undefined);
       if (result.deleted) {
         addLog("Server row deleted for this Sync ID.", "success");
         return;
