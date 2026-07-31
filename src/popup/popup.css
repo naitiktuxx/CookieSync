@@ -746,10 +746,33 @@ body[data-target="firefox"] .btn-primary:not(:disabled) {
   box-shadow: 0 4px 16px rgba(97, 201, 204, 0.35) !important;
 }
 
-/* Hide site-picker and actions when credentials card is expanded, and stretch credentials down */
+/* Smoothly hide site-picker and actions when credentials card is expanded, avoiding layout reflow lag */
+.actions,
+#site-picker,
+.settings-card,
+.picker-card {
+  will-change: max-height, opacity, transform;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              margin 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 #settings-section:not(.collapsed) ~ #site-picker,
 #settings-section:not(.collapsed) ~ .actions {
-  display: none !important;
+  max-height: 0 !important;
+  opacity: 0 !important;
+  transform: translateY(6px) !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-width: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 #settings-section:not(.collapsed) {
