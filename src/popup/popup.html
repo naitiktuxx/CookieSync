@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cookie Sync</title>
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p id="mode-label">Encrypted Sync</p>
+          <h1 id="title">Cookie Sync</h1>
+        </div>
+        <span class="signal">AES</span>
+      </header>
+      <section class="settings-grid">
+        <label>
+          Supabase URL
+          <input id="supabase-url" type="url" placeholder="https://project-ref.supabase.co" />
+        </label>
+        <label>
+          Supabase anon key
+          <input id="supabase-anon-key" type="password" autocomplete="off" />
+        </label>
+        <label>
+          <span id="sync-id-label">Sync ID</span>
+          <div class="field-row">
+            <input id="sync-id" type="text" autocomplete="off" />
+            <button id="copy-sync-id" type="button">Copy</button>
+          </div>
+        </label>
+        <label>
+          Sync passphrase
+          <input id="passphrase" type="password" autocomplete="new-password" />
+        </label>
+        <label class="check-row">
+          <input id="remember-passphrase" type="checkbox" />
+          <span>Remember passphrase</span>
+        </label>
+      </section>
+      <button id="save-settings" type="button">Save settings</button>
+      <section id="site-picker" hidden>
+        <div class="site-toolbar">
+          <button id="load-sites" type="button">Load server sites</button>
+          <label id="select-all-wrap" class="check-button" hidden>
+            <input id="select-all-sites" type="checkbox" />
+            <span>Select all</span>
+          </label>
+          <button id="expand-sites" type="button" hidden>Expand list</button>
+        </div>
+        <input id="site-search" type="search" placeholder="Search sites" hidden />
+        <div id="sites"></div>
+      </section>
+      <div class="actions">
+        <button id="upload-now" data-direction="push" type="button">Upload cookies now</button>
+        <button id="delete-remote-data" class="danger" type="button">Delete database data</button>
+        <button id="import-now" type="button">Import selected sites</button>
+      </div>
+      <div id="status" role="status"></div>
+    </main>
+    <script src="./popup.js"></script>
+  </body>
+</html>

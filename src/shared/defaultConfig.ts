@@ -1,0 +1,3 @@
+export const DEFAULT_SUPABASE_URL = "https://wryujsoegvvagmovfdlf.supabase.co";
+export const DEFAULT_SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyeXVqc29lZ3Z2YWdtb3ZmZGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MDk3NDMsImV4cCI6MjEwMTA4NTc0M30.jHA27keKCLKimyeFzUsQm3kxkVUxb5N00cEoa12SiKg";

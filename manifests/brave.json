@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Cookie Sync",
+  "description": "Sync encrypted selected-site cookies through Supabase.",
+  "version": "0.1.0",
+  "permissions": ["alarms", "cookies", "storage"],
+  "host_permissions": ["<all_urls>", "https://*.supabase.co/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Cookie Sync",
+    "default_popup": "popup.html"
+  }
+}
