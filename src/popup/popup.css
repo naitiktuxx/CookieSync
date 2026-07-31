@@ -347,8 +347,11 @@ input::placeholder {
   cursor: pointer;
 }
 
-.check-row input[type="checkbox"] {
-  display: none;
+.check-row input[type="checkbox"],
+.check-button input[type="checkbox"],
+.site-option input[type="checkbox"],
+.site-option-left input[type="checkbox"] {
+  display: none !important;
 }
 
 .check-custom {
@@ -356,6 +359,7 @@ input::placeholder {
   display: inline-block;
   width: 16px;
   height: 16px;
+  flex-shrink: 0;
   border: 1px solid var(--border-input);
   border-radius: 4px;
   background: var(--bg-input);
@@ -363,13 +367,17 @@ input::placeholder {
 }
 
 .check-row input[type="checkbox"]:checked + .check-custom,
-.check-button input[type="checkbox"]:checked + .check-custom {
+.check-button input[type="checkbox"]:checked + .check-custom,
+.site-option input[type="checkbox"]:checked + .check-custom,
+.site-option-left input[type="checkbox"]:checked + .check-custom {
   border-color: var(--target-accent);
   background: var(--target-accent);
 }
 
 .check-row input[type="checkbox"]:checked + .check-custom::after,
-.check-button input[type="checkbox"]:checked + .check-custom::after {
+.check-button input[type="checkbox"]:checked + .check-custom::after,
+.site-option input[type="checkbox"]:checked + .check-custom::after,
+.site-option-left input[type="checkbox"]:checked + .check-custom::after {
   content: "";
   position: absolute;
   top: 2px;
@@ -617,12 +625,25 @@ button:disabled {
   display: flex;
 }
 
-body[data-target="firefox"].sites-loaded .settings-card {
-  display: block;
+body[data-target="firefox"] #import-now {
+  display: flex !important;
+  width: 100%;
 }
 
-body[data-target="firefox"].sites-loaded main {
-  justify-content: space-between;
+body.sites-expanded .settings-card {
+  display: none !important;
+}
+
+body.sites-expanded .picker-card {
+  flex: 1;
+}
+
+body.sites-expanded .sites-list {
+  max-height: 420px;
+}
+
+body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
+  display: block;
 }
 
 /* Status Console */

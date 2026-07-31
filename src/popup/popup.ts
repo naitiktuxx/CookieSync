@@ -469,9 +469,16 @@ function updateImportVisibility(): void {
     return;
   }
 
-  const hasSelection = selectedSiteDomains().length > 0;
+  const selectedCount = selectedSiteDomains().length;
   importButton.hidden = __BROWSER_TARGET__ !== "firefox";
-  importButton.disabled = __BROWSER_TARGET__ === "firefox" && !hasSelection;
+  importButton.disabled = __BROWSER_TARGET__ === "firefox" && selectedCount === 0;
+
+  const span = importButton.querySelector("span");
+  if (span) {
+    span.textContent = selectedCount > 0
+      ? `Import ${selectedCount} selected site${selectedCount > 1 ? "s" : ""}`
+      : "Import selected sites";
+  }
 }
 
 function selectedSiteDomains(): string[] {
