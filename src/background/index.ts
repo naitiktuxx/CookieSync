@@ -75,6 +75,10 @@ async function handleMessage(message: unknown): Promise<unknown> {
     return engine.deleteRemoteData();
   }
 
+  if (message.type === "clear-domain-cookies") {
+    return engine.clearDomainCookies(message.domain);
+  }
+
   return engine.sync(message.direction);
 }
 
@@ -87,6 +91,7 @@ function isMessage(
   | { type: "save-settings"; passphrase: string; supabaseUrl: string; supabaseAnonKey: string; syncId: string; rememberPassphrase: boolean }
   | { type: "get-remote-sites" }
   | { type: "delete-remote-data" }
+  | { type: "clear-domain-cookies"; domain: string }
   | { type: "import-domains"; domains: string[] } {
   if (!message || typeof message !== "object") {
     return false;
@@ -101,6 +106,7 @@ function isMessage(
     syncId?: string;
     rememberPassphrase?: unknown;
     domains?: unknown;
+    domain?: unknown;
   };
   return (
     (candidate.type === "sync" && ["push", "pull", "sync"].includes(candidate.direction ?? "")) ||
@@ -108,6 +114,7 @@ function isMessage(
     candidate.type === "get-settings" ||
     candidate.type === "get-remote-sites" ||
     candidate.type === "delete-remote-data" ||
+    (candidate.type === "clear-domain-cookies" && typeof candidate.domain === "string") ||
     (candidate.type === "import-domains" && Array.isArray(candidate.domains)) ||
     (candidate.type === "save-settings" &&
       typeof candidate.passphrase === "string" &&

@@ -1,4 +1,4 @@
-import { applyCookieRecords, cookieKey, cookieSiteDomain, readCookieRecords, toCookieRecord, toDeletedCookieRecord } from "./cookies";
+import { applyCookieRecords, cookieKey, cookieSiteDomain, readCookieRecords, removeDomainCookies, toCookieRecord, toDeletedCookieRecord } from "./cookies";
 import { decryptJson, encryptJson } from "./crypto";
 import { cookieMatchesAllowedDomains, normalizeDomain } from "./domainAllowlist";
 import { SupabaseCookieStore } from "./supabaseClient";
@@ -171,6 +171,24 @@ export class CookieSyncEngine {
     }
 
     return this.push(settings, deviceId, store);
+  }
+
+  async clearDomainCookies(domain: string): Promise<{ domain: string; removedCount: number }> {
+    const settings = await this.loadSettings();
+    const normalized = normalizeDomain(domain);
+    if (!normalized) {
+      throw new Error("Invalid domain.");
+    }
+
+    const removedCount = await removeDomainCookies(normalized);
+    const importedDomains = (settings.importedDomains ?? []).filter((d) => d !== normalized);
+
+    await this.saveSettings({
+      ...settings,
+      importedDomains
+    });
+
+    return { domain: normalized, removedCount };
   }
 
   async setPassphrase(syncPassphrase: string): Promise<void> {

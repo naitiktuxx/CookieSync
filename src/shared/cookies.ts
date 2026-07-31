@@ -1,4 +1,4 @@
-import { getAllCookies, setCookie } from "./browserApi";
+import { getAllCookies, removeCookie, setCookie } from "./browserApi";
 import type { CookieRecord, SerializableCookie } from "./types";
 
 export async function readCookieRecords(
@@ -40,6 +40,27 @@ export async function applyCookieRecords(records: CookieRecord[]): Promise<numbe
   }
 
   return applied;
+}
+
+export async function removeDomainCookies(domain: string): Promise<number> {
+  const allCookies = await getAllCookies({});
+  const normalizedTarget = domain.toLowerCase().replace(/^\./u, "");
+  let removedCount = 0;
+
+  for (const cookie of allCookies) {
+    const cookieDomain = cookie.domain.toLowerCase().replace(/^\./u, "");
+    if (cookieDomain === normalizedTarget || cookieDomain.endsWith(`.${normalizedTarget}`)) {
+      try {
+        const url = cookieUrl(toSerializableCookie(cookie));
+        await removeCookie({ url, name: cookie.name, storeId: cookie.storeId });
+        removedCount += 1;
+      } catch (error) {
+        console.warn("Failed to remove cookie", cookie.domain, cookie.name, error);
+      }
+    }
+  }
+
+  return removedCount;
 }
 
 export function cookieKey(cookie: SerializableCookie): string {

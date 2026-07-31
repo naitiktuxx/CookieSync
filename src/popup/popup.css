@@ -641,6 +641,27 @@ button:disabled {
   letter-spacing: 0.2px;
 }
 
+.btn-delete-site {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #f87171;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.btn-delete-site:hover {
+  border-color: #ef4444;
+  background: #dc2626;
+  color: #ffffff;
+}
+
 /* Target conditional layouts */
 #save-settings {
   display: flex;

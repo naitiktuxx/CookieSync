@@ -449,7 +449,34 @@ function renderVisibleSites(): void {
     const badge = document.createElement("span");
     badge.className = "cookie-badge";
     badge.textContent = `${site.cookieCount} cookies`;
-    right.append(badge);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "btn-delete-site";
+    deleteBtn.title = `Clear local cookies for ${site.domain}`;
+    deleteBtn.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+      </svg>
+    `;
+    deleteBtn.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      addLog(`Clearing cookies for ${site.domain}...`);
+      void sendMessage({ type: "clear-domain-cookies", domain: site.domain })
+        .then((response) => {
+          const res = response as { domain: string; removedCount: number };
+          site.imported = false;
+          selectedDomains.delete(site.domain);
+          checkbox.checked = false;
+          addLog(`Cleared ${res.removedCount} local cookies for ${res.domain}.`, "success");
+          renderVisibleSites();
+        })
+        .catch((error) => addLog(String(error.message ?? error), "error"));
+    });
+
+    right.append(badge, deleteBtn);
 
     label.append(left, right);
     sitesContainer.append(label);
