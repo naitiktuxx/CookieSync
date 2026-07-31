@@ -434,11 +434,16 @@ function renderVisibleSites(): void {
     right.className = "site-option-right";
 
     if (site.imported) {
-      const mark = document.createElement("span");
-      mark.className = "imported-mark";
-      mark.title = "Previously imported";
-      mark.textContent = "✓ ";
-      right.append(mark);
+      const importedBadge = document.createElement("span");
+      importedBadge.className = "badge-imported";
+      importedBadge.title = "Previously imported into Firefox";
+      importedBadge.innerHTML = `
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Imported</span>
+      `;
+      right.append(importedBadge);
     }
 
     const badge = document.createElement("span");
