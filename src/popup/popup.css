@@ -636,10 +636,23 @@ body[data-target="firefox"] #import-now {
   width: 100%;
 }
 
-/* Hide site-picker and actions when credentials card is expanded */
+/* Hide site-picker and actions when credentials card is expanded, and stretch credentials down */
 #settings-section:not(.collapsed) ~ #site-picker,
 #settings-section:not(.collapsed) ~ .actions {
   display: none !important;
+}
+
+#settings-section:not(.collapsed) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#settings-section:not(.collapsed) .settings-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 body.sites-expanded .settings-card {
