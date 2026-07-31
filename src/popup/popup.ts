@@ -406,9 +406,7 @@ function setupTargetUi(): void {
   }
 
   if (targetBadgeIcon) {
-    targetBadgeIcon.innerHTML = __BROWSER_TARGET__ === "brave" 
-      ? `<img src="icon.png" width="22" height="22" style="object-fit: contain; display: block;" alt="Brave" />`
-      : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8a4 4 0 1 0 4 4"/></svg>`;
+    targetBadgeIcon.innerHTML = `<img src="icon.png" width="22" height="22" style="object-fit: contain; display: block;" alt="Cookie Sync" />`;
   }
 
   document.body.dataset.target = __BROWSER_TARGET__;
