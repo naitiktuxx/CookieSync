@@ -128,25 +128,6 @@
 
       <!-- Firefox Site Picker Section -->
       <section id="site-picker" class="card picker-card" hidden>
-        <div class="steps-row" id="firefox-steps-row">
-          <button id="load-sites" class="btn btn-secondary btn-step" type="button">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
-              <path d="M12 12v9"></path>
-              <path d="m8 17 4 4 4-4"></path>
-            </svg>
-            <span class="btn-text">1. Load sites</span>
-          </button>
-
-          <button id="import-now" class="btn btn-hero btn-step" type="button" disabled>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-              <polyline points="9 11 12 14 22 4"></polyline>
-            </svg>
-            <span class="btn-text">2. Import selected</span>
-          </button>
-        </div>
-
         <div class="site-toolbar">
           <label id="select-all-wrap" class="check-button" hidden>
             <input id="select-all-sites" type="checkbox" />
@@ -173,6 +154,25 @@
           </svg>
           <span>Upload cookies now</span>
         </button>
+
+        <div class="steps-row" id="firefox-steps-row">
+          <button id="load-sites" class="btn btn-secondary btn-step" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+              <path d="M12 12v9"></path>
+              <path d="m8 17 4 4 4-4"></path>
+            </svg>
+            <span class="btn-text">1. Load sites</span>
+          </button>
+
+          <button id="import-now" class="btn btn-hero btn-step" type="button" disabled>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              <polyline points="9 11 12 14 22 4"></polyline>
+            </svg>
+            <span class="btn-text">2. Import selected</span>
+          </button>
+        </div>
 
         <button id="delete-remote-data" class="btn btn-danger btn-full" type="button">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

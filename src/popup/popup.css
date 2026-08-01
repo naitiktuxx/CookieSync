@@ -740,8 +740,16 @@ body[data-target="brave"] #copy-sync-id {
   display: flex !important;
 }
 
+/* Brave Target Specific Layout & Button Styling */
+body[data-target="brave"] #last-synced-box,
+body[data-target="brave"] #upload-now,
+body[data-target="brave"] #delete-remote-data,
+body[data-target="brave"] #copy-sync-id {
+  display: flex !important;
+}
+
 body[data-target="brave"] #site-picker,
-body[data-target="brave"] #import-now,
+body[data-target="brave"] #firefox-steps-row,
 body[data-target="brave"] #clear-all-cookies {
   display: none !important;
 }
@@ -763,11 +771,22 @@ body[data-target="firefox"] #copy-sync-id {
   display: none !important;
 }
 
-body[data-target="firefox"] #site-picker,
-body[data-target="firefox"] #import-now,
+body[data-target="firefox"] #firefox-steps-row {
+  display: grid !important;
+  width: 100%;
+}
+
 body[data-target="firefox"] #clear-all-cookies {
   display: flex !important;
   width: 100%;
+}
+
+body[data-target="firefox"]:not(.sites-loaded) #site-picker {
+  display: none !important;
+}
+
+body[data-target="firefox"].sites-loaded #site-picker {
+  display: flex !important;
 }
 
 body[data-target="firefox"] button:disabled,
