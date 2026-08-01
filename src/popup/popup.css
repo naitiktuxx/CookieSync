@@ -758,18 +758,21 @@ button:disabled {
 }
 
 /* Brave Target Specific Layout & Button Styling */
+/* Brave Target Specific Layout & Button Styling */
 body[data-target="brave"] #last-synced-box,
-body[data-target="brave"] #upload-now,
-body[data-target="brave"] #delete-remote-data,
 body[data-target="brave"] #copy-sync-id {
   display: flex !important;
 }
 
-/* Brave Target Specific Layout & Button Styling */
-body[data-target="brave"] #last-synced-box,
-body[data-target="brave"] #upload-now,
+body[data-target="brave"] #brave-actions-row {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
 body[data-target="brave"] #delete-remote-data,
-body[data-target="brave"] #copy-sync-id {
+body[data-target="brave"] #upload-now {
   display: flex !important;
 }
 
@@ -790,14 +793,15 @@ body[data-target="brave"] .btn-primary:not(:disabled) {
 
 /* Firefox Target Specific Layout & Button Styling */
 body[data-target="firefox"] #last-synced-box,
-body[data-target="firefox"] #upload-now,
-body[data-target="firefox"] #delete-remote-data,
+body[data-target="firefox"] #brave-actions-row,
 body[data-target="firefox"] #copy-sync-id {
   display: none !important;
 }
 
 body[data-target="firefox"] #firefox-steps-row {
   display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
   width: 100%;
 }
 
