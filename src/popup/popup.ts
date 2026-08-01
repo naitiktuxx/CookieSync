@@ -54,7 +54,7 @@ let selectedDomains = new Set<string>();
 
 function updateLastSyncedDisplay(timestamp?: number): void {
   if (lastSyncedBox) {
-    lastSyncedBox.hidden = __BROWSER_TARGET__ !== "brave";
+    lastSyncedBox.hidden = false;
   }
 
   if (!lastSyncedText) {
@@ -274,8 +274,10 @@ importButton?.addEventListener("click", () => {
   void saveSettingsFromForm({ silent: true })
     .then(() => sendMessage({ type: "import-domains", domains: selectedDomains }))
     .then((response) => {
+      const res = response as { updatedAt?: number };
       addLog(formatResult(response), "success");
       updateImportVisibility();
+      updateLastSyncedDisplay(res?.updatedAt ?? Date.now());
     })
     .catch((error) => addLog(String(error.message ?? error), "error"));
 });

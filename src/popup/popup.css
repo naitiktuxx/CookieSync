@@ -815,7 +815,16 @@ body[data-target="firefox"] #settings-section:not(.collapsed) .settings-body {
   max-height: 284px !important;
 }
 
-body[data-target="firefox"] #last-synced-box,
+body[data-target="firefox"] #last-synced-box {
+  display: flex !important;
+}
+
+body[data-target="firefox"] #target-badge-icon {
+  background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
 body[data-target="firefox"] #brave-actions-row,
 body[data-target="firefox"] #copy-sync-id {
   display: none !important;
