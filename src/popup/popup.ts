@@ -612,8 +612,8 @@ function updateImportVisibility(): void {
   const span = importButton.querySelector("span");
   if (span) {
     span.textContent = selectedCount > 0
-      ? `Import ${selectedCount} selected site${selectedCount > 1 ? "s" : ""}`
-      : "Import selected sites";
+      ? `2. Import ${selectedCount} site${selectedCount > 1 ? "s" : ""}`
+      : "2. Import selected";
   }
 }
 
