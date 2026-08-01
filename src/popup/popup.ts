@@ -414,6 +414,9 @@ function setupTargetUi(): void {
 
   if (syncIdInput) {
     syncIdInput.readOnly = __BROWSER_TARGET__ === "brave";
+    syncIdInput.placeholder = __BROWSER_TARGET__ === "brave"
+      ? "Auto-generated Sync ID..."
+      : "Paste Sync ID from Brave here...";
   }
 
   if (copySyncIdButton) {
