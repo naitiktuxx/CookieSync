@@ -27,7 +27,7 @@ export class CookieSyncEngine {
     await this.getOrHydratePassphrase();
     const settings = await this.loadSettings();
     const hasPassphrase = Boolean(this.sessionPassphrase);
-    if (settings.syncId) {
+    if (settings.syncId || __BROWSER_TARGET__ !== "brave") {
       return { ...settings, hasPassphrase, syncPassphrase: this.sessionPassphrase };
     }
 
