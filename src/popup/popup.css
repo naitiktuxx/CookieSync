@@ -256,10 +256,12 @@ h1 {
 .settings-body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-height: 500px;
+  gap: 10px;
+  max-height: 275px;
   opacity: 1;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
   transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, margin 0.3s ease;
 }
 
@@ -361,6 +363,28 @@ input::placeholder {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
+}
+
+.checkboxes-save-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.checkboxes-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.btn-save-side {
+  height: 100%;
+  min-height: 38px;
+  padding: 0 12px;
+  font-size: 11px;
+  flex-shrink: 0;
 }
 
 /* Custom Checkbox Row */
@@ -750,23 +774,9 @@ body[data-target="firefox"] .btn-primary:not(:disabled) {
   box-shadow: 0 4px 16px rgba(97, 201, 204, 0.35) !important;
 }
 
-/* Hide site-picker and actions when credentials card is expanded, and stretch credentials down */
-#settings-section:not(.collapsed) ~ #site-picker,
-#settings-section:not(.collapsed) ~ .actions {
-  display: none !important;
-}
-
-#settings-section:not(.collapsed) {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-#settings-section:not(.collapsed) .settings-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+/* Settings Card Expansion Layout */
+#settings-section {
+  flex-shrink: 0;
 }
 
 body.sites-expanded .settings-card,
@@ -780,6 +790,27 @@ body.sites-expanded .picker-card {
 
 body.sites-expanded .sites-list {
   max-height: none !important;
+}
+
+/* Hide the entire Load Server Sites box (#site-picker) and Import button when credentials section is expanded */
+#settings-section:not(.collapsed) ~ #site-picker,
+#settings-section:not(.collapsed) ~ .actions #import-now {
+  display: none !important;
+}
+
+/* Firefox: When Credentials section is expanded, stretch it to touch the Activity Log box */
+body[data-target="firefox"] #settings-section:not(.collapsed) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+body[data-target="firefox"] #settings-section:not(.collapsed) .settings-body {
+  flex: 1;
+  max-height: none !important;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
@@ -832,7 +863,6 @@ body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
   transform: rotate(0deg);
 }
 
-body.log-expanded .settings-card,
 body.log-expanded #site-picker,
 body.log-expanded .actions {
   display: none !important;

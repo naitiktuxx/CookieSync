@@ -36,14 +36,16 @@ export class CookieSyncEngine {
     return { ...settings, syncId, hasPassphrase, syncPassphrase: this.sessionPassphrase };
   }
 
-  async saveConfiguration(settings: Pick<StoredSettings, "syncPassphrase" | "supabaseUrl" | "supabaseAnonKey" | "syncId" | "rememberPassphrase" | "autoSyncEnabled">): Promise<void> {
+  async saveConfiguration(settings: Partial<Pick<StoredSettings, "syncPassphrase" | "supabaseUrl" | "supabaseAnonKey" | "syncId" | "rememberPassphrase" | "autoSyncEnabled">>): Promise<void> {
     const existing = await this.loadSettings();
-    const passphraseToUse = settings.syncPassphrase || this.sessionPassphrase;
-    this.sessionPassphrase = passphraseToUse;
+    const passphraseToUse = settings.syncPassphrase !== undefined ? settings.syncPassphrase : this.sessionPassphrase;
+    if (settings.syncPassphrase !== undefined) {
+      this.sessionPassphrase = passphraseToUse;
+    }
 
     if (settings.rememberPassphrase && passphraseToUse) {
       await setSessionStorage({ sessionPassphrase: passphraseToUse });
-    } else {
+    } else if (settings.rememberPassphrase === false) {
       await removeSessionStorage(["sessionPassphrase"]);
     }
 
@@ -51,8 +53,8 @@ export class CookieSyncEngine {
       ...existing,
       ...settings,
       syncPassphrase: undefined, // Never store raw passkey in chrome.storage.local
-      supabaseUrl: settings.supabaseUrl ? normalizeSupabaseUrl(settings.supabaseUrl) : settings.supabaseUrl,
-      autoSyncEnabled: Boolean(settings.autoSyncEnabled)
+      supabaseUrl: settings.supabaseUrl !== undefined ? (settings.supabaseUrl ? normalizeSupabaseUrl(settings.supabaseUrl) : "") : existing.supabaseUrl,
+      autoSyncEnabled: settings.autoSyncEnabled !== undefined ? Boolean(settings.autoSyncEnabled) : existing.autoSyncEnabled
     });
   }
 

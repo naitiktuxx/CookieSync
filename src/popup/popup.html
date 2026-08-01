@@ -98,27 +98,31 @@
               </div>
             </label>
 
-            <label class="check-row">
-              <input id="remember-passphrase" type="checkbox" />
-              <span class="check-custom"></span>
-              <span class="check-text">Remember passphrase on this device</span>
-            </label>
+            <div class="checkboxes-save-row">
+              <div class="checkboxes-wrap">
+                <label class="check-row">
+                  <input id="remember-passphrase" type="checkbox" />
+                  <span class="check-custom"></span>
+                  <span class="check-text">Remember passphrase on this device</span>
+                </label>
 
-            <label class="check-row">
-              <input id="auto-sync-enabled" type="checkbox" />
-              <span class="check-custom"></span>
-              <span class="check-text">Auto sync once per day on browser startup</span>
-            </label>
+                <label class="check-row">
+                  <input id="auto-sync-enabled" type="checkbox" />
+                  <span class="check-custom"></span>
+                  <span class="check-text">Auto sync once per day on browser startup</span>
+                </label>
+              </div>
+
+              <button id="save-settings" class="btn btn-primary btn-save-side" type="button" title="Save Configuration">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                <span>Save</span>
+              </button>
+            </div>
           </div>
-
-          <button id="save-settings" class="btn btn-primary btn-full" type="button">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
-            </svg>
-            <span>Save Configuration</span>
-          </button>
         </div>
       </section>
 

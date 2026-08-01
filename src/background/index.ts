@@ -84,7 +84,7 @@ function isMessage(
   | { type: "sync"; direction: SyncDirection }
   | { type: "set-passphrase"; passphrase: string }
   | { type: "get-settings" }
-  | { type: "save-settings"; passphrase: string; supabaseUrl: string; supabaseAnonKey: string; syncId: string; rememberPassphrase: boolean; autoSyncEnabled?: boolean }
+  | { type: "save-settings"; passphrase?: string; supabaseUrl?: string; supabaseAnonKey?: string; syncId?: string; rememberPassphrase?: boolean; autoSyncEnabled?: boolean }
   | { type: "get-remote-sites" }
   | { type: "delete-remote-data" }
   | { type: "clear-domain-cookies"; domain: string }
@@ -116,10 +116,11 @@ function isMessage(
     (candidate.type === "clear-domain-cookies" && typeof candidate.domain === "string") ||
     (candidate.type === "import-domains" && Array.isArray(candidate.domains)) ||
     (candidate.type === "save-settings" &&
-      typeof candidate.passphrase === "string" &&
-      typeof candidate.supabaseUrl === "string" &&
-      typeof candidate.supabaseAnonKey === "string" &&
-      typeof candidate.syncId === "string" &&
-      typeof candidate.rememberPassphrase === "boolean")
+      (candidate.passphrase === undefined || typeof candidate.passphrase === "string") &&
+      (candidate.supabaseUrl === undefined || typeof candidate.supabaseUrl === "string") &&
+      (candidate.supabaseAnonKey === undefined || typeof candidate.supabaseAnonKey === "string") &&
+      (candidate.syncId === undefined || typeof candidate.syncId === "string") &&
+      (candidate.rememberPassphrase === undefined || typeof candidate.rememberPassphrase === "boolean") &&
+      (candidate.autoSyncEnabled === undefined || typeof candidate.autoSyncEnabled === "boolean"))
   );
 }

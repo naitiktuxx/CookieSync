@@ -73,12 +73,21 @@ setupTargetUi();
 void loadSettings();
 
 settingsHeader?.addEventListener("click", () => {
+  const isExpanding = settingsSection?.classList.contains("collapsed");
   settingsSection?.classList.toggle("collapsed");
+  if (isExpanding) {
+    document.body.classList.remove("log-expanded");
+    statusFooter?.classList.remove("expanded");
+  }
 });
 
 statusHeader?.addEventListener("click", () => {
+  const isExpandingLog = !document.body.classList.contains("log-expanded");
   document.body.classList.toggle("log-expanded");
   statusFooter?.classList.toggle("expanded");
+  if (isExpandingLog && settingsSection) {
+    settingsSection.classList.add("collapsed");
+  }
 });
 
 // Password toggle helper
@@ -93,32 +102,52 @@ saveButton?.addEventListener("click", () => {
   void saveSettingsFromForm({ silent: false }).catch(() => undefined);
 });
 
+// Auto-save on typing/change so unsaved input is never lost when popup closes
+const autoSaveInputs = [supabaseUrlInput, supabaseAnonKeyInput, syncIdInput, passphraseInput];
+for (const input of autoSaveInputs) {
+  input?.addEventListener("input", () => {
+    void saveSettingsFromForm({ silent: true }).catch(() => undefined);
+  });
+}
+rememberPassphraseInput?.addEventListener("change", () => {
+  void saveSettingsFromForm({ silent: true }).catch(() => undefined);
+});
+autoSyncEnabledInput?.addEventListener("change", () => {
+  void saveSettingsFromForm({ silent: true }).catch(() => undefined);
+});
+
 async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<void> {
-  const passphrase = passphraseInput?.value.trim();
-  const supabaseUrl = supabaseUrlInput?.value.trim();
-  const supabaseAnonKey = supabaseAnonKeyInput?.value.trim();
-  const syncId = syncIdInput?.value.trim();
+  const passphrase = passphraseInput?.value.trim() ?? "";
+  const supabaseUrl = supabaseUrlInput?.value.trim() ?? "";
+  const supabaseAnonKey = supabaseAnonKeyInput?.value.trim() ?? "";
+  const syncId = syncIdInput?.value.trim() ?? "";
   const rememberPassphrase = Boolean(rememberPassphraseInput?.checked);
   const autoSyncEnabled = Boolean(autoSyncEnabledInput?.checked);
 
-  if (!supabaseUrl || !supabaseAnonKey || !syncId || !passphrase) {
-    addLog("Fill all settings first.", "error");
-    throw new Error("Fill all settings first.");
-  }
-
   try {
     await sendMessage({ type: "save-settings", supabaseUrl, supabaseAnonKey, syncId, passphrase, rememberPassphrase, autoSyncEnabled });
+    
+    const isFullyConfigured = Boolean(supabaseUrl) && Boolean(supabaseAnonKey) && Boolean(syncId) && Boolean(passphrase);
+
     if (settingsStatusBadge) {
-      settingsStatusBadge.textContent = "Configured ✓";
-      settingsStatusBadge.className = "badge-status configured";
+      if (isFullyConfigured) {
+        settingsStatusBadge.textContent = "Configured ✓";
+        settingsStatusBadge.className = "badge-status configured";
+      } else {
+        settingsStatusBadge.textContent = "Setup Required";
+        settingsStatusBadge.className = "badge-status setup";
+      }
     }
     if (!silent) {
-      addLog(rememberPassphrase ? "Settings saved with passphrase." : "Settings saved without passphrase.", "success");
-      settingsSection?.classList.add("collapsed");
+      addLog(isFullyConfigured ? (rememberPassphrase ? "Settings saved with passphrase." : "Settings saved without passphrase.") : "Partial settings saved.", "success");
+      if (isFullyConfigured) {
+        settingsSection?.classList.add("collapsed");
+      }
     }
   } catch (error) {
-    addLog(String(error instanceof Error ? error.message : error), "error");
-    throw error;
+    if (!silent) {
+      addLog(String(error instanceof Error ? error.message : error), "error");
+    }
   }
 }
 
