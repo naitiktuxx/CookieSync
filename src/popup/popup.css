@@ -791,6 +791,21 @@ body[data-target="brave"] .btn-primary:not(:disabled) {
   box-shadow: 0 4px 16px rgba(81, 85, 109, 0.35) !important;
 }
 
+/* Brave: When Credentials section is expanded, stretch it so action buttons attach right above Activity Log box */
+body[data-target="brave"] #settings-section:not(.collapsed) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+body[data-target="brave"] #settings-section:not(.collapsed) .settings-body {
+  flex: 1;
+  max-height: none !important;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 /* Firefox Target Specific Layout & Button Styling */
 body[data-target="firefox"] #last-synced-box,
 body[data-target="firefox"] #brave-actions-row,
