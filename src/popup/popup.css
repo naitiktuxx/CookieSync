@@ -812,7 +812,7 @@ body[data-target="brave"] #settings-section:not(.collapsed) .settings-body {
 
 /* Firefox Target Specific Layout & Button Styling */
 body[data-target="firefox"] #settings-section:not(.collapsed) .settings-body {
-  max-height: 330px !important;
+  max-height: 295px !important;
 }
 
 body[data-target="firefox"] #last-synced-box,
