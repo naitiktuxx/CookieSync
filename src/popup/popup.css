@@ -808,25 +808,11 @@ body.sites-expanded .sites-list {
   max-height: none !important;
 }
 
-/* Hide the entire Load Server Sites box (#site-picker) and Import button when credentials section is expanded */
-#settings-section:not(.collapsed) ~ #site-picker,
-#settings-section:not(.collapsed) ~ .actions #import-now {
-  display: none !important;
-}
-
-/* Firefox: When Credentials section is expanded, stretch it to touch the Activity Log box */
-body[data-target="firefox"] #settings-section:not(.collapsed) {
+/* Firefox: When Credentials section is expanded, keep #site-picker visible and scrollable */
+body[data-target="firefox"] #settings-section:not(.collapsed) ~ #site-picker {
+  display: flex !important;
   flex: 1;
-  display: flex;
-  flex-direction: column;
   min-height: 0;
-}
-
-body[data-target="firefox"] #settings-section:not(.collapsed) .settings-body {
-  flex: 1;
-  max-height: none !important;
-  min-height: 0;
-  overflow-y: auto;
 }
 
 body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
@@ -879,7 +865,18 @@ body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
   transform: rotate(0deg);
 }
 
-body.log-expanded #site-picker,
+body[data-target="firefox"].log-expanded #site-picker {
+  display: flex !important;
+  flex: 0 0 auto !important;
+}
+
+body[data-target="firefox"].log-expanded #site-picker .site-toolbar,
+body[data-target="firefox"].log-expanded #site-picker .search-wrap,
+body[data-target="firefox"].log-expanded #site-picker .sites-list {
+  display: none !important;
+}
+
+body[data-target="brave"].log-expanded #site-picker,
 body.log-expanded .actions {
   display: none !important;
 }
