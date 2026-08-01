@@ -781,12 +781,11 @@ body[data-target="firefox"] #clear-all-cookies {
   width: 100%;
 }
 
-body[data-target="firefox"]:not(.sites-loaded) #site-picker {
-  display: none !important;
-}
-
-body[data-target="firefox"].sites-loaded #site-picker {
+body[data-target="firefox"] #site-picker {
   display: flex !important;
+  flex: 1;
+  min-height: 100px;
+  width: 100%;
 }
 
 body[data-target="firefox"] button:disabled,
