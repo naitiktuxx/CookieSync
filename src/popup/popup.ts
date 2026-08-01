@@ -19,6 +19,18 @@ const loadSitesButton = document.querySelector<HTMLButtonElement>("#load-sites")
 const selectAllSitesInput = document.querySelector<HTMLInputElement>("#select-all-sites");
 const selectAllWrap = document.querySelector<HTMLLabelElement>("#select-all-wrap");
 const expandSitesButton = document.querySelector<HTMLButtonElement>("#expand-sites");
+
+const EXPAND_ICON_SVG = `<svg class="expand-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>`;
+const COMPACT_ICON_SVG = `<svg class="expand-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>`;
+
+function updateExpandSitesButton(): void {
+  if (!expandSitesButton) return;
+  const isExpanded = document.body.classList.contains("sites-expanded");
+  const titleText = isExpanded ? "Compact list" : "Expand list";
+  expandSitesButton.title = titleText;
+  expandSitesButton.setAttribute("aria-label", titleText);
+  expandSitesButton.innerHTML = isExpanded ? COMPACT_ICON_SVG : EXPAND_ICON_SVG;
+}
 const siteSearchInput = document.querySelector<HTMLInputElement>("#site-search");
 const status = document.querySelector<HTMLDivElement>("#status");
 const actionButtons = document.querySelectorAll<HTMLButtonElement>("[data-direction]");
@@ -285,9 +297,7 @@ selectAllSitesInput?.addEventListener("change", () => {
 
 expandSitesButton?.addEventListener("click", () => {
   document.body.classList.toggle("sites-expanded");
-  if (expandSitesButton) {
-    expandSitesButton.textContent = document.body.classList.contains("sites-expanded") ? "Compact" : "Expand list";
-  }
+  updateExpandSitesButton();
 });
 
 for (const button of Array.from(actionButtons)) {
@@ -484,7 +494,7 @@ function renderVisibleSites(): void {
   }
   if (expandSitesButton) {
     expandSitesButton.hidden = !hasLoadedSites;
-    expandSitesButton.textContent = document.body.classList.contains("sites-expanded") ? "Compact" : "Expand list";
+    updateExpandSitesButton();
   }
   if (selectAllSitesInput && !hasVisibleSites) {
     selectAllSitesInput.checked = false;
