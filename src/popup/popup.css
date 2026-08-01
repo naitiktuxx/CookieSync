@@ -887,15 +887,21 @@ body.log-expanded #site-picker {
   margin-left: auto;
 }
 
-/* Status Console */
+/* Status Console (Isolated & Hardened) */
 .status-footer {
-  margin-top: auto;
-  flex-shrink: 0;
+  margin-top: auto !important;
+  flex-shrink: 0 !important;
+  min-height: 52px;
   border: 1px solid var(--border-card);
   border-radius: 10px;
-  background: rgba(2, 6, 23, 0.7);
+  background: #090e1a !important;
   padding: 6px 10px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 20;
+  contain: layout paint style;
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .status-header {
