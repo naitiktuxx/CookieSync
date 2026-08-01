@@ -4,26 +4,17 @@ import type { BrowserTarget, SyncDirection } from "../shared/types";
 
 declare const __BROWSER_TARGET__: BrowserTarget;
 
-const SYNC_ALARM_NAME = "selected-site-cookie-sync";
-const DAILY_SYNC_PERIOD_MINUTES = 24 * 60;
 const engine = new CookieSyncEngine();
 
+// Run daily startup sync once per day on first browser boot (if enabled by user)
+void engine.runDailyStartupSyncIfNeeded().catch((error) => console.error("Initial startup sync check failed", error));
+
 extensionApi.runtime.onInstalled.addListener(() => {
-  if (__BROWSER_TARGET__ === "brave") {
-    scheduleDailySync();
-  }
+  void engine.runDailyStartupSyncIfNeeded().catch((error) => console.error("Startup sync check failed", error));
 });
 
 extensionApi.runtime.onStartup?.addListener(() => {
-  if (__BROWSER_TARGET__ === "brave") {
-    scheduleDailySync();
-  }
-});
-
-extensionApi.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === SYNC_ALARM_NAME && __BROWSER_TARGET__ === "brave") {
-    void engine.sync("push").catch((error) => console.error("Scheduled sync failed", error));
-  }
+  void engine.runDailyStartupSyncIfNeeded().catch((error) => console.error("Startup sync check failed", error));
 });
 
 extensionApi.cookies.onChanged.addListener((changeInfo) => {
@@ -58,7 +49,8 @@ async function handleMessage(message: unknown): Promise<unknown> {
       supabaseUrl: message.supabaseUrl,
       supabaseAnonKey: message.supabaseAnonKey,
       syncId: message.syncId,
-      rememberPassphrase: message.rememberPassphrase
+      rememberPassphrase: message.rememberPassphrase,
+      autoSyncEnabled: message.autoSyncEnabled
     });
     return { saved: true };
   }
@@ -92,7 +84,7 @@ function isMessage(
   | { type: "sync"; direction: SyncDirection }
   | { type: "set-passphrase"; passphrase: string }
   | { type: "get-settings" }
-  | { type: "save-settings"; passphrase: string; supabaseUrl: string; supabaseAnonKey: string; syncId: string; rememberPassphrase: boolean }
+  | { type: "save-settings"; passphrase: string; supabaseUrl: string; supabaseAnonKey: string; syncId: string; rememberPassphrase: boolean; autoSyncEnabled?: boolean }
   | { type: "get-remote-sites" }
   | { type: "delete-remote-data" }
   | { type: "clear-domain-cookies"; domain: string }
@@ -110,6 +102,7 @@ function isMessage(
     supabaseAnonKey?: string;
     syncId?: string;
     rememberPassphrase?: unknown;
+    autoSyncEnabled?: unknown;
     domains?: unknown;
     domain?: unknown;
   };
@@ -129,11 +122,4 @@ function isMessage(
       typeof candidate.syncId === "string" &&
       typeof candidate.rememberPassphrase === "boolean")
   );
-}
-
-function scheduleDailySync(): void {
-  extensionApi.alarms.create(SYNC_ALARM_NAME, {
-    delayInMinutes: DAILY_SYNC_PERIOD_MINUTES,
-    periodInMinutes: DAILY_SYNC_PERIOD_MINUTES
-  });
 }

@@ -232,10 +232,17 @@ h1 {
 
 .chevron-icon {
   color: var(--text-muted);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-card {
+  flex-shrink: 0;
+  transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .settings-card:not(.collapsed) .card-header.clickable {
   margin-bottom: 12px;
+  transition: margin-bottom 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .settings-card.collapsed .chevron-icon {
@@ -250,10 +257,17 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-height: 500px;
+  opacity: 1;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, margin 0.3s ease;
 }
 
 .settings-card.collapsed .settings-body {
-  display: none !important;
+  max-height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none;
+  margin: 0 !important;
 }
 
 .card-title {
@@ -678,18 +692,38 @@ button:disabled {
   display: flex;
 }
 
-body[data-target="brave"] #last-synced-box {
+/* Brave Target Specific Layout & Button Styling */
+body[data-target="brave"] #last-synced-box,
+body[data-target="brave"] #upload-now,
+body[data-target="brave"] #delete-remote-data,
+body[data-target="brave"] #copy-sync-id {
   display: flex !important;
 }
 
-body[data-target="firefox"] #last-synced-box {
-  display: none !important;
-}
-
+body[data-target="brave"] #site-picker,
+body[data-target="brave"] #import-now,
 body[data-target="brave"] #clear-all-cookies {
   display: none !important;
 }
 
+body[data-target="brave"] .btn-hero:not(:disabled),
+body[data-target="brave"] .btn-primary:not(:disabled) {
+  background: linear-gradient(135deg, #51556d, #414559) !important;
+  border-color: #51556d !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 16px rgba(81, 85, 109, 0.35) !important;
+}
+
+/* Firefox Target Specific Layout & Button Styling */
+body[data-target="firefox"] #last-synced-box,
+body[data-target="firefox"] #upload-now,
+body[data-target="firefox"] #delete-remote-data,
+body[data-target="firefox"] #copy-sync-id {
+  display: none !important;
+}
+
+body[data-target="firefox"] #site-picker,
 body[data-target="firefox"] #import-now,
 body[data-target="firefox"] #clear-all-cookies {
   display: flex !important;
@@ -735,7 +769,8 @@ body[data-target="firefox"] .btn-primary:not(:disabled) {
   justify-content: space-between;
 }
 
-body.sites-expanded .settings-card {
+body.sites-expanded .settings-card,
+body.sites-expanded .status-footer {
   display: none !important;
 }
 
@@ -759,6 +794,7 @@ body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
   border-radius: 10px;
   background: rgba(2, 6, 23, 0.7);
   padding: 6px 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .status-header {
@@ -766,6 +802,17 @@ body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 4px;
+}
+
+.status-header.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.status-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .status-title {
@@ -776,6 +823,28 @@ body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
   text-transform: uppercase;
 }
 
+.status-footer .chevron-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: rotate(-90deg);
+}
+
+.status-footer.expanded .chevron-icon {
+  transform: rotate(0deg);
+}
+
+body.log-expanded .settings-card,
+body.log-expanded #site-picker,
+body.log-expanded .actions {
+  display: none !important;
+}
+
+body.log-expanded .status-footer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .status-console {
   display: flex;
   flex-direction: column-reverse;
@@ -783,6 +852,13 @@ body[data-target="firefox"].sites-loaded .settings-card:not(.collapsed) {
   min-height: 32px;
   max-height: 48px;
   overflow-y: auto;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), flex 0.35s ease;
+}
+
+.status-footer.expanded .status-console {
+  flex: 1;
+  max-height: 500px !important;
+  min-height: 120px;
 }
 
 .log-line {

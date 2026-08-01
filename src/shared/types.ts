@@ -8,6 +8,8 @@ export interface StoredSettings {
   supabaseAnonKey?: string;
   syncId?: string;
   rememberPassphrase?: boolean;
+  autoSyncEnabled?: boolean;
+  lastAutoSyncedDate?: string;
   importedDomains?: string[];
   lastSyncedAt?: number;
   deviceId?: string;

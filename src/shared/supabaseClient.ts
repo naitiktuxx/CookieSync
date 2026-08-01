@@ -5,6 +5,7 @@ export interface SupabaseConfig {
   url: string;
   anonKey: string;
   syncId: string;
+  authHash?: string;
 }
 
 export class SupabaseCookieStore {
@@ -19,17 +20,22 @@ export class SupabaseCookieStore {
 
   async uploadPayload(payload: EncryptedPayload): Promise<void> {
     const url = this.endpoint("/rest/v1/cookie_sync?on_conflict=sync_id");
+    const body: Record<string, unknown> = {
+      sync_id: this.config.syncId,
+      payload,
+      updated_at: new Date().toISOString()
+    };
+    if (this.config.authHash) {
+      body.auth_hash = this.config.authHash;
+    }
+
     await this.fetchSupabase(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Prefer: "resolution=merge-duplicates"
       },
-      body: JSON.stringify({
-        sync_id: this.config.syncId,
-        payload,
-        updated_at: new Date().toISOString()
-      })
+      body: JSON.stringify(body)
     });
   }
 
@@ -50,18 +56,42 @@ export class SupabaseCookieStore {
   }
 
   private async fetchSupabase(url: string, init: RequestInit = {}): Promise<Response> {
-    const response = await fetch(url, {
-      ...init,
-      headers: {
-        apikey: this.config.anonKey,
-        Authorization: `Bearer ${this.config.anonKey}`,
-        ...(init.headers ?? {})
-      }
-    });
+    const authHeaders: Record<string, string> = {
+      apikey: this.config.anonKey,
+      Authorization: `Bearer ${this.config.anonKey}`
+    };
+    if (this.config.authHash) {
+      authHeaders["x-sync-auth"] = this.config.authHash;
+    }
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...init,
+        headers: {
+          ...authHeaders,
+          ...(init.headers ?? {})
+        }
+      });
+    } catch {
+      throw new Error("Network/URL Error: Could not connect to Supabase. Check your internet connection or Supabase URL.");
+    }
 
     if (!response.ok) {
       const message = await response.text();
-      throw new Error(`Supabase request failed: ${response.status} ${message}`);
+      if (response.status === 401 || response.status === 403) {
+        if (message.includes("row-level security policy") || message.includes("42501")) {
+          throw new Error("Database RLS Security Error (401/403): Server data for this Sync ID exists under a different passphrase. Solution: Click 'Delete database data' or generate a new Sync ID.");
+        }
+        if (message.includes("Invalid API key") || message.includes("JWT") || message.includes("apiKey")) {
+          throw new Error("Supabase Anon Key Error (401): Invalid or expired Anon Key in settings.");
+        }
+        throw new Error(`Access Denied (${response.status}): Credentials or Passphrase rejected by Supabase.`);
+      }
+      if (response.status === 404 || message.includes("42P01")) {
+        throw new Error("Database Table Missing (404): Table 'public.cookie_sync' does not exist in Supabase. Run the SQL setup script.");
+      }
+      throw new Error(`Supabase Request Error (${response.status}): ${message}`);
     }
 
     return response;

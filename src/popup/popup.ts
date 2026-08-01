@@ -12,6 +12,7 @@ const syncIdInput = document.querySelector<HTMLInputElement>("#sync-id");
 const passphraseInput = document.querySelector<HTMLInputElement>("#passphrase");
 const togglePassphraseButton = document.querySelector<HTMLButtonElement>("#toggle-passphrase");
 const rememberPassphraseInput = document.querySelector<HTMLInputElement>("#remember-passphrase");
+const autoSyncEnabledInput = document.querySelector<HTMLInputElement>("#auto-sync-enabled");
 const saveButton = document.querySelector<HTMLButtonElement>("#save-settings");
 const copySyncIdButton = document.querySelector<HTMLButtonElement>("#copy-sync-id");
 const loadSitesButton = document.querySelector<HTMLButtonElement>("#load-sites");
@@ -33,6 +34,8 @@ const settingsHeader = document.querySelector<HTMLDivElement>("#settings-header"
 const settingsStatusBadge = document.querySelector<HTMLSpanElement>("#settings-status-badge");
 const lastSyncedBox = document.querySelector<HTMLElement>("#last-synced-box");
 const lastSyncedText = document.querySelector<HTMLElement>("#last-synced-text");
+const statusFooter = document.querySelector<HTMLElement>("#status-footer");
+const statusHeader = document.querySelector<HTMLElement>("#status-header");
 
 let loadedSites: RemoteSiteOption[] = [];
 let selectedDomains = new Set<string>();
@@ -73,6 +76,11 @@ settingsHeader?.addEventListener("click", () => {
   settingsSection?.classList.toggle("collapsed");
 });
 
+statusHeader?.addEventListener("click", () => {
+  document.body.classList.toggle("log-expanded");
+  statusFooter?.classList.toggle("expanded");
+});
+
 // Password toggle helper
 togglePassphraseButton?.addEventListener("click", () => {
   if (!passphraseInput) return;
@@ -91,6 +99,7 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
   const supabaseAnonKey = supabaseAnonKeyInput?.value.trim();
   const syncId = syncIdInput?.value.trim();
   const rememberPassphrase = Boolean(rememberPassphraseInput?.checked);
+  const autoSyncEnabled = Boolean(autoSyncEnabledInput?.checked);
 
   if (!supabaseUrl || !supabaseAnonKey || !syncId || !passphrase) {
     addLog("Fill all settings first.", "error");
@@ -98,7 +107,7 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
   }
 
   try {
-    await sendMessage({ type: "save-settings", supabaseUrl, supabaseAnonKey, syncId, passphrase, rememberPassphrase });
+    await sendMessage({ type: "save-settings", supabaseUrl, supabaseAnonKey, syncId, passphrase, rememberPassphrase, autoSyncEnabled });
     if (settingsStatusBadge) {
       settingsStatusBadge.textContent = "Configured ✓";
       settingsStatusBadge.className = "badge-status configured";
@@ -332,12 +341,15 @@ async function loadSettings(): Promise<void> {
     if (rememberPassphraseInput) {
       rememberPassphraseInput.checked = Boolean(settings.rememberPassphrase);
     }
-    if (passphraseInput && settings.rememberPassphrase) {
-      passphraseInput.value = settings.syncPassphrase ?? "";
+    if (autoSyncEnabledInput) {
+      autoSyncEnabledInput.checked = Boolean(settings.autoSyncEnabled);
     }
-
+    if (passphraseInput && settings.syncPassphrase) {
+      passphraseInput.value = settings.syncPassphrase;
+    }
+    const settingsWithAuth = settings as StoredSettings & { hasPassphrase?: boolean };
     const hasSyncId = Boolean(settings.syncId);
-    const hasPassphrase = Boolean(settings.syncPassphrase || passphraseInput?.value.trim());
+    const hasPassphrase = Boolean(settingsWithAuth.hasPassphrase || settings.syncPassphrase || passphraseInput?.value.trim());
     const isConfigured = hasSyncId && hasPassphrase;
 
     if (settingsSection) {

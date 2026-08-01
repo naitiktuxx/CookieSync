@@ -1,9 +1,9 @@
 import { applyCookieRecords, clearAllLocalCookies, cookieKey, cookieSiteDomain, readCookieRecords, removeDomainCookies, toCookieRecord, toDeletedCookieRecord } from "./cookies";
-import { decryptJson, encryptJson } from "./crypto";
+import { decryptJson, deriveAuthHash, encryptJson } from "./crypto";
 import { cookieMatchesAllowedDomains, normalizeDomain } from "./domainAllowlist";
 import { SupabaseCookieStore } from "./supabaseClient";
 import { normalizeSupabaseUrl } from "./supabaseUrl";
-import { getStorage, setStorage } from "./browserApi";
+import { getSessionStorage, getStorage, removeSessionStorage, setSessionStorage, setStorage } from "./browserApi";
 import type { BrowserTarget, CookieRecord, CookieSnapshot, RemoteSiteOption, StoredSettings, SyncDirection } from "./types";
 
 declare const __BROWSER_TARGET__: BrowserTarget;
@@ -23,29 +23,70 @@ export class CookieSyncEngine {
   private applyingRemote = false;
   private sessionPassphrase?: string;
 
-  async getSettings(): Promise<StoredSettings> {
+  async getSettings(): Promise<StoredSettings & { hasPassphrase?: boolean }> {
+    await this.getOrHydratePassphrase();
     const settings = await this.loadSettings();
+    const hasPassphrase = Boolean(this.sessionPassphrase);
     if (settings.syncId) {
-      return settings;
+      return { ...settings, hasPassphrase, syncPassphrase: this.sessionPassphrase };
     }
 
     const syncId = generateSyncId();
     await this.saveSettings({ ...settings, syncId });
-    return { ...settings, syncId };
+    return { ...settings, syncId, hasPassphrase, syncPassphrase: this.sessionPassphrase };
   }
 
-  async saveConfiguration(settings: Pick<StoredSettings, "syncPassphrase" | "supabaseUrl" | "supabaseAnonKey" | "syncId" | "rememberPassphrase">): Promise<void> {
+  async saveConfiguration(settings: Pick<StoredSettings, "syncPassphrase" | "supabaseUrl" | "supabaseAnonKey" | "syncId" | "rememberPassphrase" | "autoSyncEnabled">): Promise<void> {
     const existing = await this.loadSettings();
-    this.sessionPassphrase = settings.syncPassphrase;
+    const passphraseToUse = settings.syncPassphrase || this.sessionPassphrase;
+    this.sessionPassphrase = passphraseToUse;
+
+    if (settings.rememberPassphrase && passphraseToUse) {
+      await setSessionStorage({ sessionPassphrase: passphraseToUse });
+    } else {
+      await removeSessionStorage(["sessionPassphrase"]);
+    }
+
     await this.saveSettings({
       ...existing,
       ...settings,
-      syncPassphrase: settings.rememberPassphrase ? settings.syncPassphrase : undefined,
-      supabaseUrl: settings.supabaseUrl ? normalizeSupabaseUrl(settings.supabaseUrl) : settings.supabaseUrl
+      syncPassphrase: undefined, // Never store raw passkey in chrome.storage.local
+      supabaseUrl: settings.supabaseUrl ? normalizeSupabaseUrl(settings.supabaseUrl) : settings.supabaseUrl,
+      autoSyncEnabled: Boolean(settings.autoSyncEnabled)
     });
   }
 
+  async runDailyStartupSyncIfNeeded(): Promise<boolean> {
+    await this.getOrHydratePassphrase();
+    const settings = await this.loadSettings();
+
+    // Default is OFF unless explicitly enabled by user
+    if (!settings.autoSyncEnabled) {
+      return false;
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    if (settings.lastAutoSyncedDate === today) {
+      return false; // Already synced once today on startup
+    }
+
+    const direction = __BROWSER_TARGET__ === "brave" ? "push" : "pull";
+    try {
+      await this.sync(direction);
+      const updated = await this.loadSettings();
+      await this.saveSettings({
+        ...updated,
+        lastAutoSyncedDate: today
+      });
+      return true;
+    } catch (error) {
+      console.warn("Startup auto-sync skipped/failed:", error);
+      return false;
+    }
+  }
+
   async getRemoteSites(): Promise<RemoteSiteOption[]> {
+    await this.getOrHydratePassphrase();
     const settings = await this.loadSettings();
     let snapshot: CookieSnapshot;
     try {
@@ -77,9 +118,9 @@ export class CookieSyncEngine {
   }
 
   async deleteRemoteData(): Promise<{ deleted: boolean; wiped: boolean; missing: boolean }> {
+    await this.getOrHydratePassphrase();
     const settings = await this.loadSettings();
-    const storeSettings = requireStoreSettings(settings);
-    const store = new SupabaseCookieStore(storeSettings);
+    const store = await this.getStore(settings);
     const existedBefore = Boolean(await store.downloadLatestPayload());
     if (!existedBefore) {
       await this.saveSettings({
@@ -121,6 +162,7 @@ export class CookieSyncEngine {
   }
 
   async importDomains(domains: string[]): Promise<SyncResult> {
+    await this.getOrHydratePassphrase();
     const settings = await this.loadSettings();
     const normalizedDomains = normalizeDomains(domains);
     if (normalizedDomains.length === 0) {
@@ -153,9 +195,9 @@ export class CookieSyncEngine {
   }
 
   async sync(direction: SyncDirection): Promise<SyncResult> {
+    await this.getOrHydratePassphrase();
     const settings = await this.loadSettings();
-    const config = requireConfiguredSettings(settings, this.sessionPassphrase);
-    const store = new SupabaseCookieStore(config);
+    const store = await this.getStore(settings);
 
     const deviceId = settings.deviceId ?? crypto.randomUUID();
     if (!settings.deviceId) {
@@ -210,7 +252,12 @@ export class CookieSyncEngine {
   async setPassphrase(syncPassphrase: string): Promise<void> {
     const settings = await this.loadSettings();
     this.sessionPassphrase = syncPassphrase;
-    await this.saveSettings({ ...settings, syncPassphrase });
+    if (settings.rememberPassphrase) {
+      await setSessionStorage({ sessionPassphrase: syncPassphrase });
+    } else {
+      await removeSessionStorage(["sessionPassphrase"]);
+    }
+    await this.saveSettings({ ...settings, syncPassphrase: undefined });
   }
 
   async recordCookieChange(changeInfo: chrome.cookies.CookieChangeInfo): Promise<boolean> {
@@ -233,15 +280,30 @@ export class CookieSyncEngine {
     return true;
   }
 
+  private async getOrHydratePassphrase(): Promise<string | undefined> {
+    if (this.sessionPassphrase) {
+      return this.sessionPassphrase;
+    }
+    const session = await getSessionStorage<{ sessionPassphrase?: string }>(["sessionPassphrase"]);
+    if (session.sessionPassphrase) {
+      this.sessionPassphrase = session.sessionPassphrase;
+    }
+    return this.sessionPassphrase;
+  }
+
   private async downloadSnapshot(settings: StoredSettings): Promise<CookieSnapshot> {
     const config = requireConfiguredSettings(settings, this.sessionPassphrase);
-    const store = new SupabaseCookieStore(config);
+    const store = await this.getStore(settings);
     const payload = await store.downloadLatestPayload();
     if (!payload) {
-      throw new Error("No cookie upload found for this Sync ID yet.");
+      throw new Error("No data accessible for this Sync ID. Either no cookies have been uploaded yet, or your Sync ID / Passphrase is incorrect.");
     }
 
-    return normalizeSnapshot(await decryptJson<CookieSnapshot>(payload, config.passphrase));
+    try {
+      return normalizeSnapshot(await decryptJson<CookieSnapshot>(payload, config.passphrase));
+    } catch {
+      throw new Error("Decryption Failed: Incorrect passphrase used for this Sync ID.");
+    }
   }
 
   private async push(settings: StoredSettings, deviceId: string, store: SupabaseCookieStore): Promise<SyncResult> {
@@ -280,6 +342,13 @@ export class CookieSyncEngine {
       deviceId,
       records
     };
+  }
+
+  private async getStore(settings: StoredSettings): Promise<SupabaseCookieStore> {
+    await this.getOrHydratePassphrase();
+    const config = requireConfiguredSettings(settings, this.sessionPassphrase);
+    const authHash = await deriveAuthHash(config.passphrase, config.syncId);
+    return new SupabaseCookieStore({ ...config, authHash });
   }
 
   private async applyRecords(records: CookieRecord[]): Promise<number> {
@@ -377,6 +446,5 @@ function emptyResult(direction: SyncDirection): SyncResult {
 }
 
 function generateSyncId(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return crypto.randomUUID();
 }

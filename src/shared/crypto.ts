@@ -49,6 +49,31 @@ async function deriveKey(passphrase: string, salt: Uint8Array, iterations = ITER
   );
 }
 
+export async function deriveAuthHash(passphrase: string, syncId: string): Promise<string> {
+  const baseKey = await crypto.subtle.importKey(
+    "raw",
+    asArrayBuffer(encoder.encode(passphrase)),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+  const salt = encoder.encode(`CookieSync-Auth-v1:${syncId}`);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt: asArrayBuffer(salt), iterations: 50_000, hash: "SHA-256" },
+    baseKey,
+    256
+  );
+  return bytesToHex(new Uint8Array(bits));
+}
+
+function bytesToHex(bytes: Uint8Array): string {
+  let hex = "";
+  for (const byte of bytes) {
+    hex += byte.toString(16).padStart(2, "0");
+  }
+  return hex;
+}
+
 function bytesToBase64(bytes: Uint8Array): string {
   let binary = "";
   for (const byte of bytes) {
@@ -69,3 +94,4 @@ function base64ToBytes(value: string): Uint8Array {
 function asArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
 }
+

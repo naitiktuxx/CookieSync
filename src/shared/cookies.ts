@@ -51,9 +51,12 @@ export async function removeDomainCookies(domain: string): Promise<number> {
     const cookieDomain = cookie.domain.toLowerCase().replace(/^\./u, "");
     if (cookieDomain === normalizedTarget || cookieDomain.endsWith(`.${normalizedTarget}`)) {
       try {
-        const url = cookieUrl(toSerializableCookie(cookie));
-        await removeCookie({ url, name: cookie.name, storeId: cookie.storeId });
-        removedCount += 1;
+        const serializable = toSerializableCookie(cookie);
+        const url = cookieUrl(serializable);
+        const removed = await removeCookie({ url, name: cookie.name, storeId: cookie.storeId });
+        if (removed !== null) {
+          removedCount += 1;
+        }
       } catch (error) {
         console.warn("Failed to remove cookie", cookie.domain, cookie.name, error);
       }
@@ -69,19 +72,17 @@ export async function clearAllLocalCookies(): Promise<number> {
 
   for (const cookie of cookies) {
     try {
-      const isHostCookie = cookie.name.startsWith("__Host-");
-      const isSecureCookie = cookie.name.startsWith("__Secure-") || isHostCookie || cookie.secure;
-      const protocol = isSecureCookie ? "https" : "http";
-      const host = cookie.domain.startsWith(".") ? cookie.domain.slice(1) : cookie.domain;
-      const url = `${protocol}://${host}${cookie.path || "/"}`;
-
+      const serializable = toSerializableCookie(cookie);
+      const url = cookieUrl(serializable);
       const details: chrome.cookies.CookieDetails = {
         url,
         name: cookie.name,
         storeId: cookie.storeId
       };
-      await removeCookie(details);
-      removedCount += 1;
+      const removed = await removeCookie(details);
+      if (removed !== null) {
+        removedCount += 1;
+      }
     } catch (error) {
       console.warn("Failed to remove cookie", cookie.domain, cookie.name, error);
     }
@@ -141,7 +142,9 @@ function toSetDetails(cookie: SerializableCookie): chrome.cookies.SetDetails {
 }
 
 function cookieUrl(cookie: SerializableCookie): string {
-  const protocol = cookie.secure ? "https" : "http";
+  const isHostCookie = cookie.name.startsWith("__Host-");
+  const isSecureCookie = cookie.name.startsWith("__Secure-") || isHostCookie || cookie.secure;
+  const protocol = isSecureCookie ? "https" : "http";
   const host = cookie.domain.startsWith(".") ? cookie.domain.slice(1) : cookie.domain;
   return `${protocol}://${host}${cookie.path || "/"}`;
 }

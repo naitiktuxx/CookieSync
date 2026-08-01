@@ -103,6 +103,12 @@
               <span class="check-custom"></span>
               <span class="check-text">Remember passphrase on this device</span>
             </label>
+
+            <label class="check-row">
+              <input id="auto-sync-enabled" type="checkbox" />
+              <span class="check-custom"></span>
+              <span class="check-text">Auto sync once per day on browser startup</span>
+            </label>
           </div>
 
           <button id="save-settings" class="btn btn-primary btn-full" type="button">
@@ -181,9 +187,14 @@
       </section>
 
       <!-- Status Console -->
-      <footer class="status-footer">
-        <div class="status-header">
-          <span class="status-title">Activity Log</span>
+      <footer class="status-footer" id="status-footer">
+        <div class="status-header clickable" id="status-header" role="button" tabindex="0" title="Click to expand/collapse Activity Log">
+          <div class="status-title-wrap">
+            <span class="status-title">Activity Log</span>
+            <svg class="chevron-icon" id="status-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
           <div id="last-synced-box" class="last-synced-box">
             <span class="last-synced-label">Last synced:</span>
             <span id="last-synced-text" class="last-synced-text">Never</span>
