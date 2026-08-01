@@ -62,10 +62,14 @@ body[data-target="firefox"] {
   --target-glow: rgba(97, 201, 204, 0.4);
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  transition: none !important;
+  animation: none !important;
 }
 
 body {
