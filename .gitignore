@@ -1,8 +1,16 @@
+# Dependencies & Build Outputs
 node_modules/
 dist/
 work/
 outputs/
 *.log
 .DS_Store
-.obsidian/
 
+# IDE & Workspace Metadata
+.obsidian/
+.idea/
+.vscode/
+
+# AI Assistant & Internal Scratch Files
+goal/
+security_check.md

@@ -37,8 +37,8 @@ before any public disclosure.
 ## No formal audit
 
 CookieSync has **not** undergone an independent third-party security audit.
-The design choices are documented in the README's Security Model section and
-in `security_check.md` in this repo, and the code is open for review — but
+The design choices are documented in the README's Security Model section,
+and the code is open for review — but
 "open source" is not a substitute for an audit. Use your own judgment about
 how much you trust it with sensitive session data, especially before relying
 on it for accounts you can't afford to lose.
