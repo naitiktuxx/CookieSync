@@ -238,7 +238,7 @@ The output directories will be generated in `dist/brave` and `dist/firefox`.
 ### 5.5 Installing from GitHub Releases (Recommended for Non-Developers)
 
 Every tagged release publishes pre-built bundles on the
-[Releases page](../../releases) — you don't need Node.js or npm installed.
+[Releases page](https://github.com/naitiktuxx/CookieSync/releases) — you don't need Node.js or npm installed.
 
 **Brave / Chromium:**
 1. Download `cookie-sync-brave-vX.Y.Z.zip` from the latest release.
