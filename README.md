@@ -1,4 +1,4 @@
-# CookieSync — Cross-Browser Encrypted Cookie Sync Extension
+# CookieSync A Cross Browser Encrypted Cookie Sync Extension
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
@@ -6,7 +6,7 @@ A secure, high-performance WebExtensions project for syncing end-to-end encrypte
 
 ---
 
-## 📌 Table of Contents (Rooprekha / Table of Contents)
+## 📌 Table of Contents
 
 Click any item below to auto-scroll directly to that section:
 
