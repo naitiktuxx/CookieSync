@@ -163,7 +163,7 @@ export class CookieSyncEngine {
     return { deleted: false, wiped: true, missing: false };
   }
 
-  async importDomains(domains: string[]): Promise<SyncResult> {
+  async importDomains(domains: string[], options?: { deleteOnFetch?: boolean }): Promise<SyncResult> {
     await this.getOrHydratePassphrase();
     const settings = await this.loadSettings();
     const normalizedDomains = normalizeDomains(domains);
@@ -186,6 +186,15 @@ export class CookieSyncEngine {
       lastSyncedAt: snapshot.updatedAt
     });
 
+    if (options?.deleteOnFetch) {
+      try {
+        const store = await this.getStore(settings);
+        await store.deletePayload();
+      } catch (error) {
+        console.warn("Failed to delete remote payload after import:", error);
+      }
+    }
+
     return {
       direction: "pull",
       uploaded: false,
@@ -196,7 +205,7 @@ export class CookieSyncEngine {
     };
   }
 
-  async sync(direction: SyncDirection): Promise<SyncResult> {
+  async sync(direction: SyncDirection, options?: { deleteOnFetch?: boolean }): Promise<SyncResult> {
     await this.getOrHydratePassphrase();
     const settings = await this.loadSettings();
     const store = await this.getStore(settings);
@@ -211,7 +220,7 @@ export class CookieSyncEngine {
       if (importedDomains.length === 0) {
         return emptyResult("pull");
       }
-      return this.importDomains(importedDomains);
+      return this.importDomains(importedDomains, options);
     }
 
     if (direction === "push") {

@@ -1,0 +1,98 @@
+name: Release
+
+# Triggers on any tag matching v1.2.3 — push a tag to publish a release:
+#   git tag v0.1.0 && git push origin v0.1.0
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Verify manifest versions match the release tag
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          for f in manifests/brave.json manifests/firefox.json; do
+            MANIFEST_VERSION=$(node -p "require('./$f').version")
+            if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
+              echo "::error::$f version ($MANIFEST_VERSION) does not match tag ($TAG_VERSION)"
+              exit 1
+            fi
+          done
+
+      - name: Build Brave bundle
+        run: npm run build:brave
+
+      - name: Build Firefox bundle
+        run: npm run build:firefox
+
+      - name: Package Brave zip
+        run: |
+          cd dist/brave
+          zip -r "../../cookie-sync-brave-${GITHUB_REF_NAME}.zip" .
+          cd -
+
+      # --- Firefox: unsigned fallback zip (always produced) ---
+      - name: Package Firefox zip (unsigned, temporary-load only)
+        run: |
+          cd dist/firefox
+          zip -r "../../cookie-sync-firefox-${GITHUB_REF_NAME}.zip" .
+          cd -
+
+      # --- Firefox: signed .xpi (optional — only runs if AMO secrets are set) ---
+      # To enable persistent Firefox installs (not just "Load Temporary Add-on"),
+      # create an account at https://addons.mozilla.org/developers/, generate
+      # API credentials under Manage API Keys, and add them as repo secrets:
+      #   AMO_JWT_ISSUER, AMO_JWT_SECRET
+      - name: Sign Firefox build with AMO (if credentials configured)
+        if: ${{ env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != '' }}
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: |
+          npx web-ext sign \
+            --source-dir=dist/firefox \
+            --artifacts-dir=web-ext-artifacts \
+            --api-key="$AMO_JWT_ISSUER" \
+            --api-secret="$AMO_JWT_SECRET" \
+            --channel=unlisted
+          cp web-ext-artifacts/*.xpi "cookie-sync-firefox-${GITHUB_REF_NAME}.xpi" || true
+
+      - name: Generate checksums
+        run: |
+          sha256sum cookie-sync-*.zip > checksums.txt
+          if ls cookie-sync-*.xpi >/dev/null 2>&1; then
+            sha256sum cookie-sync-*.xpi >> checksums.txt
+          fi
+          cat checksums.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            cookie-sync-brave-*.zip
+            cookie-sync-firefox-*.zip
+            cookie-sync-firefox-*.xpi
+            checksums.txt
+          generate_release_notes: true
+          fail_on_unmatched_files: false

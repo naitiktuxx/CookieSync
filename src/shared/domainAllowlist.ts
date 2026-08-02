@@ -16,6 +16,12 @@ export function normalizeDomain(value: string): string | undefined {
   return host || undefined;
 }
 
+/**
+ * Certain web ecosystems share authentication, session state, and static assets across multiple related domains.
+ * For example, Google and YouTube rely on cross-domain SSO tokens and assets hosted on google.com, googleusercontent.com,
+ * and gstatic.com. When a user syncs cookies for one of these primary sites, the related family domains must also be matched
+ * to ensure complete session state restoration without breaking auth flows.
+ */
 const DOMAIN_FAMILIES: Record<string, string[]> = {
   "youtube.com": ["youtube.com", "google.com", "googleusercontent.com", "gstatic.com"],
   "google.com": ["google.com", "youtube.com", "googleusercontent.com", "gstatic.com"]

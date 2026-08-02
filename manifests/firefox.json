@@ -7,8 +7,8 @@
     "alarms",
     "cookies",
     "storage",
-    "<all_urls>",
-    "https://*.supabase.co/*"
+    "http://*/*",
+    "https://*/*"
   ],
   "icons": {
     "16": "icon.png",

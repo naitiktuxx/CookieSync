@@ -4,18 +4,21 @@
   "private": true,
   "type": "module",
   "description": "Shared WebExtensions codebase for syncing encrypted selected-site cookies through Supabase.",
+  "license": "MIT",
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:brave": "node scripts/build.mjs brave",
     "build:firefox": "node scripts/build.mjs firefox",
     "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "esbuild src/shared/crypto.test.ts src/shared/domainAllowlist.test.ts src/shared/cookies.test.ts --bundle --format=esm --outdir=dist/tests --platform=node && node --test dist/tests/*.test.js"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.287",
     "@types/firefox-webext-browser": "^120.0.4",
     "esbuild": "^0.23.1",
     "typescript": "^5.6.2",
+    "vitest": "^2.1.8",
     "web-ext": "^8.3.0"
   }
 }

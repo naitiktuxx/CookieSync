@@ -2,7 +2,7 @@ type CallbackApi = typeof chrome;
 
 declare const browser: typeof chrome | undefined;
 
-const rawApi = (typeof chrome !== "undefined" ? chrome : browser) as CallbackApi;
+const rawApi = (typeof chrome !== "undefined" ? chrome : typeof browser !== "undefined" ? browser : {}) as CallbackApi;
 
 function toPromise<T>(invoke: (done: (value: T) => void) => void): Promise<T> {
   return new Promise((resolve, reject) => {

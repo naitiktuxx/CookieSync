@@ -52,8 +52,6 @@ for update
 to anon
 using (
   auth_hash = (current_setting('request.headers', true)::json->>'x-sync-auth')
-  or auth_hash is null
-  or auth_hash = ''
 )
 with check (
   auth_hash = (current_setting('request.headers', true)::json->>'x-sync-auth')

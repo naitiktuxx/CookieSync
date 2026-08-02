@@ -4,7 +4,7 @@
   "description": "Sync encrypted selected-site cookies through Supabase.",
   "version": "0.1.0",
   "permissions": ["alarms", "cookies", "storage"],
-  "host_permissions": ["<all_urls>", "https://*.supabase.co/*"],
+  "host_permissions": ["http://*/*", "https://*/*"],
   "icons": {
     "16": "icon.png",
     "48": "icon.png",

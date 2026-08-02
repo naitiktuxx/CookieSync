@@ -1,5 +1,7 @@
 # CookieSync — Cross-Browser Encrypted Cookie Sync Extension
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 A secure, high-performance WebExtensions project for syncing end-to-end encrypted browser session cookies between browsers (e.g., Brave/Chromium to Firefox) via a self-hosted or cloud Supabase backend.
 
 ---
@@ -11,6 +13,7 @@ Click any item below to auto-scroll directly to that section:
 1. [Overview & Key Features](#1-overview--key-features)
 2. [Project Architecture & Directory Structure](#2-project-architecture--directory-structure)
 3. [Security Model & Zero-Knowledge Architecture](#3-security-model--zero-knowledge-architecture)
+   - [3.4 Known Limitations & Threat Model](#34-known-limitations--threat-model)
 4. [Complete Supabase Setup Wiki (Step-by-Step)](#4-complete-supabase-setup-wiki-step-by-step)
    - [4.1 Create a Free Supabase Project](#41-create-a-free-supabase-project)
    - [4.2 Obtain Supabase API Credentials](#42-obtain-supabase-api-credentials)
@@ -20,6 +23,7 @@ Click any item below to auto-scroll directly to that section:
    - [5.2 Building Extension Bundles](#52-building-extension-bundles)
    - [5.3 Installing in Brave / Chromium](#53-installing-in-brave--chromium)
    - [5.4 Installing in Firefox](#54-installing-in-firefox)
+   - [5.5 Installing from GitHub Releases (Recommended for Non-Developers)](#55-installing-from-github-releases-recommended-for-non-developers)
 6. [Extension Pairing & Usage Walkthrough](#6-extension-pairing--usage-walkthrough)
    - [6.1 Brave Setup (Publisher/Host)](#61-brave-setup-publisherhost)
    - [6.2 Firefox Setup (Consumer/Receiver)](#62-firefox-setup-consumerreceiver)
@@ -93,6 +97,53 @@ CookieSync/
    - The hash is sent as an HTTP header (`x-sync-auth`). Supabase PostgreSQL RLS verifies `auth_hash = header`.
    - Supabase cannot reverse `x-sync-auth` to recover the original passphrase or AES key.
 
+### 3.4 Known Limitations & Threat Model
+
+This section exists so you can decide, with full information, how much you
+trust CookieSync with your session cookies. Read it before using this with
+accounts you can't afford to lose.
+
+**Every CookieSync installation is self-hosted.** You create your own free
+Supabase project and enter your own URL + anon key when you set it up.
+Nothing is shared between different people's installations — there is no
+central server, and no secret in this repository is meant to protect *your*
+data. Your own Supabase URL, anon key, sync ID, and passphrase are the only
+things that matter for your instance, and they're never committed to this
+repo or shared with anyone else who clones it.
+
+**What CookieSync protects against:**
+- Someone with read access to your Supabase database (a breach, a curious
+  admin, Supabase itself) sees only ciphertext — they cannot recover your
+  cookies without your passphrase.
+- Network interception between your browser and Supabase sees only
+  ciphertext and a non-reversible auth hash, never your passphrase or
+  encryption key.
+
+**What CookieSync does *not* protect against:**
+- **A compromised device.** If malware or a malicious extension has access
+  to your browser, it can read your passphrase and decrypted cookies
+  directly — no client-side encryption tool can defend against this.
+- **A weak or reused passphrase.** The encryption key is derived from your
+  passphrase via PBKDF2 (250,000 iterations). That raises the cost of
+  offline brute-forcing a captured ciphertext blob, it doesn't eliminate
+  it — use a long, unique passphrase you don't use anywhere else.
+- **Anyone who obtains your Sync ID *and* passphrase.** Pairing is
+  intentionally simple (no account system, no identity verification) — treat
+  both like a shared password, and don't send them over an insecure channel.
+- **The 24-hour exposure window.** Encrypted payloads persist in your
+  Supabase table for up to 24 hours (automatic TTL cleanup) or until you
+  manually wipe them. Treat this like leaving an encrypted backup online for
+  a day, not an instant, ephemeral transfer.
+- **Row-level write access from anyone holding your anon key.** The `anon`
+  key is embedded in the built extension and is, by nature of being
+  client-side, extractable. Row Level Security policies restrict what an
+  anon-key holder can do to rows scoped by `auth_hash`, but if you ever
+  suspect your anon key or Supabase credentials have leaked, rotate them in
+  the Supabase dashboard immediately and generate a new Sync ID.
+- **Formal security review.** This project has not been independently
+  audited — see [SECURITY.md](./SECURITY.md) for the full disclaimer and how
+  to report issues.
+
 ---
 
 ## 4. Complete Supabase Setup Wiki (Step-by-Step)
@@ -119,86 +170,21 @@ Follow these steps to set up your free Supabase database from scratch.
    - **Project URL**: Example: `https://xyzprojectref.supabase.co`
    - **`anon` / `public` API Key**: Example: `eyJhbGciOi...` *(Do NOT copy the service_role key).*
 
+> [!WARNING]
+> These credentials are yours alone. Never commit them to a git repository
+> (including this one, if you fork it) and never share them publicly —
+> anyone with your URL + anon key can interact with your `cookie_sync`
+> table within the bounds of the RLS policies below.
+
 ---
 
 ### 4.3 Execute the Database & RLS Security Script
 
 1. In your Supabase left sidebar, click **SQL Editor** (`>/_` icon).
 2. Click **"+ New query"** at the top left.
-3. Paste the following complete SQL script:
-
-```sql
--- ===================================================
--- CookieSync Hardened Supabase Schema & RLS Policies
--- ===================================================
-
--- 1. Create table with auth_hash column for RLS verification
-create table if not exists public.cookie_sync (
-  sync_id text primary key,
-  payload jsonb not null,
-  auth_hash text not null,
-  updated_at timestamptz not null default now()
-);
-
--- Ensure auth_hash column exists on existing tables
-alter table public.cookie_sync add column if not exists auth_hash text;
-
--- Index for efficient 24-hour TTL cleanup queries
-create index if not exists idx_cookie_sync_updated_at on public.cookie_sync(updated_at);
-
--- 2. Enable Row Level Security (RLS)
-alter table public.cookie_sync enable row level security;
-
--- 3. Drop legacy wide-open policies if existing
-drop policy if exists "anon can read cookie sync" on public.cookie_sync;
-drop policy if exists "anon can upsert cookie sync" on public.cookie_sync;
-drop policy if exists "anon can update cookie sync" on public.cookie_sync;
-drop policy if exists "anon can delete cookie sync" on public.cookie_sync;
-drop policy if exists "Scoped read with auth header" on public.cookie_sync;
-drop policy if exists "Scoped insert with auth header" on public.cookie_sync;
-drop policy if exists "Scoped update with auth header" on public.cookie_sync;
-drop policy if exists "Scoped delete with auth header" on public.cookie_sync;
-
--- 4. Create scoped RLS policies enforcing matching x-sync-auth header
-create policy "Scoped read with auth header"
-on public.cookie_sync for select to anon
-using (
-  auth_hash = (current_setting('request.headers', true)::json->>'x-sync-auth')
-);
-
-create policy "Scoped insert with auth header"
-on public.cookie_sync for insert to anon
-with check (
-  auth_hash = (current_setting('request.headers', true)::json->>'x-sync-auth')
-);
-
-create policy "Scoped update with auth header"
-on public.cookie_sync for update to anon
-using (
-  auth_hash = (current_setting('request.headers', true)::json->>'x-sync-auth')
-  or auth_hash is null
-  or auth_hash = ''
-)
-with check (
-  auth_hash = (current_setting('request.headers', true)::json->>'x-sync-auth')
-);
-
-create policy "Scoped delete with auth header"
-on public.cookie_sync for delete to anon
-using (
-  auth_hash = (current_setting('request.headers', true)::json->>'x-sync-auth')
-);
-
--- 5. Enable 24-Hour Automated TTL Cleanup
-create extension if not exists pg_cron;
-
-select cron.schedule(
-  'purge-expired-cookie-syncs',
-  '0 * * * *',
-  $$ delete from public.cookie_sync where updated_at < now() - interval '24 hours'; $$
-);
-```
-
+3. Paste the complete SQL script from
+   [`supabase_schema_queries/Supabase Queries.md`](./supabase_schema_queries/Supabase%20Queries.md)
+   into the editor.
 4. Click **"Run"** (`Cmd + Enter` / `Ctrl + Enter`).
 5. Output should show `Success. No rows returned` or `schedule: 1`.
 
@@ -241,6 +227,39 @@ The output directories will be generated in `dist/brave` and `dist/firefox`.
 1. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`.
 2. Click **Load Temporary Add-on...**.
 3. Select `dist/firefox/manifest.json`.
+
+> [!NOTE]
+> Temporary add-ons in Firefox are removed every time you restart the
+> browser. For a persistent install without building from source, use the
+> signed release below instead.
+
+---
+
+### 5.5 Installing from GitHub Releases (Recommended for Non-Developers)
+
+Every tagged release publishes pre-built bundles on the
+[Releases page](../../releases) — you don't need Node.js or npm installed.
+
+**Brave / Chromium:**
+1. Download `cookie-sync-brave-vX.Y.Z.zip` from the latest release.
+2. Unzip it.
+3. Follow [5.3 Installing in Brave / Chromium](#53-installing-in-brave--chromium), selecting the unzipped folder in **Load unpacked**.
+
+**Firefox:**
+1. Download `cookie-sync-firefox-vX.Y.Z.xpi` from the latest release (a
+   signed package, if available for that release — check the release notes).
+2. Open `about:addons` → gear icon → **Install Add-on From File...** → select
+   the `.xpi`.
+3. If only the unsigned `cookie-sync-firefox-vX.Y.Z.zip` is available for a
+   given release, it can only be loaded temporarily via
+   [5.4](#54-installing-in-firefox) and will not persist across restarts.
+
+**Verifying integrity (recommended, since this handles cookies):**
+Every release includes a `checksums.txt`. Verify a download before
+installing it:
+```bash
+sha256sum -c checksums.txt --ignore-missing
+```
 
 ---
 
@@ -297,4 +316,8 @@ Click the header of the **Activity Log** console at the bottom of the extension 
 
 ## 8. License & Disclaimers
 
-CookieSync is provided under the open-source MIT License. Use responsibly and ensure you adhere to session security best practices.
+CookieSync is provided under the open-source MIT License (see [LICENSE](./LICENSE)). Use responsibly and ensure you adhere to session security best practices.
+
+This software is provided "as is," without warranty of any kind. See
+[SECURITY.md](./SECURITY.md) for the project's security scope, known
+limitations, and how to report vulnerabilities.
