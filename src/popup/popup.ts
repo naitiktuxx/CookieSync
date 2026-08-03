@@ -125,7 +125,12 @@ rememberPassphraseInput?.addEventListener("change", () => {
   void saveSettingsFromForm({ silent: true }).catch(() => undefined);
 });
 autoSyncEnabledInput?.addEventListener("change", () => {
-  void saveSettingsFromForm({ silent: true }).catch(() => undefined);
+  const isEnabled = Boolean(autoSyncEnabledInput.checked);
+  void saveSettingsFromForm({ silent: true })
+    .then(() => {
+      addLog(`Daily startup auto-sync ${isEnabled ? "enabled" : "disabled"}.`, "info");
+    })
+    .catch(() => undefined);
 });
 
 async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<void> {

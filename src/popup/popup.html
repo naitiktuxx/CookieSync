@@ -38,13 +38,13 @@
 
       <!-- Settings Section (Collapsible) -->
       <section class="card settings-card" id="settings-section">
-        <div class="card-header clickable" id="settings-header" role="button" tabindex="0" title="Click to toggle credentials panel">
+        <div class="card-header clickable" id="settings-header" role="button" tabindex="0" title="Click to toggle settings panel">
           <span class="card-title">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
-            Supabase Credentials
+            Settings & Credentials
           </span>
           <div class="card-header-right">
             <span class="badge-status" id="settings-status-badge">Setup</span>
@@ -98,18 +98,30 @@
               </div>
             </label>
 
+            <!-- Auto Sync Option Card (at bottom of settings) -->
+            <div class="setting-toggle-card">
+              <div class="setting-toggle-info">
+                <div class="setting-toggle-title">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                  </svg>
+                  <span>Daily Auto Sync</span>
+                  <span class="badge-not-recommended">Not Recommended</span>
+                </div>
+                <span class="setting-toggle-desc">OFF by default. Auto syncs cookies once per day on browser startup.</span>
+              </div>
+              <label class="switch-toggle" title="Enable/Disable Daily Auto Sync (Not Recommended)">
+                <input id="auto-sync-enabled" type="checkbox" />
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+
             <div class="checkboxes-save-row">
               <div class="checkboxes-wrap">
                 <label class="check-row">
                   <input id="remember-passphrase" type="checkbox" />
                   <span class="check-custom"></span>
                   <span class="check-text">Remember passphrase on this device</span>
-                </label>
-
-                <label class="check-row">
-                  <input id="auto-sync-enabled" type="checkbox" />
-                  <span class="check-custom"></span>
-                  <span class="check-text">Auto sync once per day on browser startup</span>
                 </label>
               </div>
 

@@ -38,21 +38,24 @@ export class CookieSyncEngine {
 
   async saveConfiguration(settings: Partial<Pick<StoredSettings, "syncPassphrase" | "supabaseUrl" | "supabaseAnonKey" | "syncId" | "rememberPassphrase" | "autoSyncEnabled">>): Promise<void> {
     const existing = await this.loadSettings();
-    const passphraseToUse = settings.syncPassphrase !== undefined ? settings.syncPassphrase : this.sessionPassphrase;
+    const passphraseToUse = settings.syncPassphrase !== undefined ? settings.syncPassphrase : (this.sessionPassphrase ?? existing.syncPassphrase);
     if (settings.syncPassphrase !== undefined) {
       this.sessionPassphrase = passphraseToUse;
     }
 
-    if (settings.rememberPassphrase && passphraseToUse) {
+    const rememberPassphrase = settings.rememberPassphrase !== undefined ? Boolean(settings.rememberPassphrase) : Boolean(existing.rememberPassphrase);
+
+    if (rememberPassphrase && passphraseToUse) {
       await setSessionStorage({ sessionPassphrase: passphraseToUse });
-    } else if (settings.rememberPassphrase === false) {
+    } else {
       await removeSessionStorage(["sessionPassphrase"]);
     }
 
     await this.saveSettings({
       ...existing,
       ...settings,
-      syncPassphrase: undefined, // Never store raw passkey in chrome.storage.local
+      rememberPassphrase,
+      syncPassphrase: rememberPassphrase ? passphraseToUse : undefined,
       supabaseUrl: settings.supabaseUrl !== undefined ? (settings.supabaseUrl ? normalizeSupabaseUrl(settings.supabaseUrl) : "") : existing.supabaseUrl,
       autoSyncEnabled: settings.autoSyncEnabled !== undefined ? Boolean(settings.autoSyncEnabled) : existing.autoSyncEnabled
     });
@@ -268,7 +271,10 @@ export class CookieSyncEngine {
     } else {
       await removeSessionStorage(["sessionPassphrase"]);
     }
-    await this.saveSettings({ ...settings, syncPassphrase: undefined });
+    await this.saveSettings({
+      ...settings,
+      syncPassphrase: settings.rememberPassphrase ? syncPassphrase : undefined
+    });
   }
 
   async recordCookieChange(changeInfo: chrome.cookies.CookieChangeInfo): Promise<boolean> {
@@ -298,8 +304,15 @@ export class CookieSyncEngine {
     const session = await getSessionStorage<{ sessionPassphrase?: string }>(["sessionPassphrase"]);
     if (session.sessionPassphrase) {
       this.sessionPassphrase = session.sessionPassphrase;
+      return this.sessionPassphrase;
     }
-    return this.sessionPassphrase;
+    const settings = await this.loadSettings();
+    if (settings.rememberPassphrase && settings.syncPassphrase) {
+      this.sessionPassphrase = settings.syncPassphrase;
+      await setSessionStorage({ sessionPassphrase: settings.syncPassphrase });
+      return this.sessionPassphrase;
+    }
+    return undefined;
   }
 
   private async downloadSnapshot(settings: StoredSettings): Promise<CookieSnapshot> {
@@ -373,7 +386,11 @@ export class CookieSyncEngine {
 
   private async loadSettings(): Promise<StoredSettings> {
     const stored = await getStorage<{ [SETTINGS_KEY]?: StoredSettings }>([SETTINGS_KEY]);
-    return stored[SETTINGS_KEY] ?? {};
+    const settings = stored[SETTINGS_KEY] ?? {};
+    return {
+      autoSyncEnabled: false,
+      ...settings
+    };
   }
 
   private async saveSettings(settings: StoredSettings): Promise<void> {
