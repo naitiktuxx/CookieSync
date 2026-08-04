@@ -141,7 +141,6 @@ main {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
   gap: 2px;
-  margin-bottom: 3px;
 }
 
 .pill-option {
