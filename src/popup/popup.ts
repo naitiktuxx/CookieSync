@@ -72,9 +72,7 @@ function setTheme(theme: "dark" | "catppuccin"): void {
 function toggleTheme(): void {
   const newTheme = currentTheme === "dark" ? "catppuccin" : "dark";
   setTheme(newTheme);
-  void saveSettingsFromForm({ silent: true })
-    .catch(() => {})
-    .then(() => sendMessage({ type: "save-config", config: { themePreference: newTheme } }))
+  void sendMessage({ type: "save-settings", themePreference: newTheme })
     .catch((error) => console.warn("Failed to save theme preference:", error));
 }
 

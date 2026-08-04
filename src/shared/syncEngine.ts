@@ -36,7 +36,7 @@ export class CookieSyncEngine {
     return { ...settings, syncId, hasPassphrase, syncPassphrase: this.sessionPassphrase };
   }
 
-  async saveConfiguration(settings: Partial<Pick<StoredSettings, "syncPassphrase" | "supabaseUrl" | "supabaseAnonKey" | "syncId" | "rememberPassphrase" | "autoSyncEnabled">>): Promise<void> {
+  async saveConfiguration(settings: Partial<Pick<StoredSettings, "syncPassphrase" | "supabaseUrl" | "supabaseAnonKey" | "syncId" | "rememberPassphrase" | "autoSyncEnabled" | "themePreference">>): Promise<void> {
     const existing = await this.loadSettings();
     const passphraseToUse = settings.syncPassphrase !== undefined ? settings.syncPassphrase : (this.sessionPassphrase ?? existing.syncPassphrase);
     if (settings.syncPassphrase !== undefined) {

@@ -50,7 +50,8 @@ async function handleMessage(message: unknown): Promise<unknown> {
       supabaseAnonKey: message.supabaseAnonKey,
       syncId: message.syncId,
       rememberPassphrase: message.rememberPassphrase,
-      autoSyncEnabled: message.autoSyncEnabled
+      autoSyncEnabled: message.autoSyncEnabled,
+      themePreference: message.themePreference
     });
     return { saved: true };
   }
@@ -84,7 +85,7 @@ function isMessage(
   | { type: "sync"; direction: SyncDirection }
   | { type: "set-passphrase"; passphrase: string }
   | { type: "get-settings" }
-  | { type: "save-settings"; passphrase?: string; supabaseUrl?: string; supabaseAnonKey?: string; syncId?: string; rememberPassphrase?: boolean; autoSyncEnabled?: boolean }
+  | { type: "save-settings"; passphrase?: string; supabaseUrl?: string; supabaseAnonKey?: string; syncId?: string; rememberPassphrase?: boolean; autoSyncEnabled?: boolean; themePreference?: "dark" | "catppuccin" }
   | { type: "get-remote-sites" }
   | { type: "delete-remote-data" }
   | { type: "clear-domain-cookies"; domain: string }
@@ -103,6 +104,7 @@ function isMessage(
     syncId?: string;
     rememberPassphrase?: unknown;
     autoSyncEnabled?: unknown;
+    themePreference?: unknown;
     domains?: unknown;
     domain?: unknown;
   };
@@ -121,6 +123,7 @@ function isMessage(
       (candidate.supabaseAnonKey === undefined || typeof candidate.supabaseAnonKey === "string") &&
       (candidate.syncId === undefined || typeof candidate.syncId === "string") &&
       (candidate.rememberPassphrase === undefined || typeof candidate.rememberPassphrase === "boolean") &&
-      (candidate.autoSyncEnabled === undefined || typeof candidate.autoSyncEnabled === "boolean"))
+      (candidate.autoSyncEnabled === undefined || typeof candidate.autoSyncEnabled === "boolean") &&
+      (candidate.themePreference === undefined || candidate.themePreference === "dark" || candidate.themePreference === "catppuccin"))
   );
 }
