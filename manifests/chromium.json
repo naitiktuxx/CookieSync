@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Cookie Sync",
+  "name": "Cookie Sync (Chromium)",
   "description": "Sync encrypted selected-site cookies through Supabase.",
   "version": "0.1.0",
   "permissions": ["alarms", "cookies", "storage"],
@@ -15,7 +15,7 @@
     "type": "module"
   },
   "action": {
-    "default_title": "Cookie Sync",
+    "default_title": "Cookie Sync (Chromium Publisher)",
     "default_popup": "popup.html",
     "default_icon": "icon.png"
   }

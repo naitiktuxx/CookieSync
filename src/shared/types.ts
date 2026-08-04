@@ -1,4 +1,4 @@
-export type BrowserTarget = "brave" | "firefox";
+export type BrowserTarget = "chromium" | "gecko";
 
 export type SyncDirection = "push" | "pull" | "sync";
 
@@ -14,6 +14,7 @@ export interface StoredSettings {
   lastSyncedAt?: number;
   deviceId?: string;
   cookieLedger?: Record<string, CookieRecord>;
+  themePreference?: "dark" | "catppuccin";
 }
 
 export interface SerializableCookie {

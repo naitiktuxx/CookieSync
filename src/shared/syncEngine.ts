@@ -27,7 +27,7 @@ export class CookieSyncEngine {
     await this.getOrHydratePassphrase();
     const settings = await this.loadSettings();
     const hasPassphrase = Boolean(this.sessionPassphrase);
-    if (settings.syncId || __BROWSER_TARGET__ !== "brave") {
+    if (settings.syncId || __BROWSER_TARGET__ !== "chromium") {
       return { ...settings, hasPassphrase, syncPassphrase: this.sessionPassphrase };
     }
 
@@ -75,7 +75,7 @@ export class CookieSyncEngine {
       return false; // Already synced once today on startup
     }
 
-    const direction = __BROWSER_TARGET__ === "brave" ? "push" : "pull";
+    const direction = __BROWSER_TARGET__ === "chromium" ? "push" : "pull";
     try {
       await this.sync(direction);
       const updated = await this.loadSettings();

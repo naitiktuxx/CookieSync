@@ -24,15 +24,33 @@
               <span class="status-dot"></span>
               <span id="mode-label">E2E Encrypted</span>
             </div>
-            <h1 id="title">Cookie Sync</h1>
+            <h1 id="title">CookieSync</h1>
           </div>
         </div>
-        <div class="crypto-chip" title="AES-GCM-256 Client Encryption">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
-          <span>AES-256</span>
+        <div class="header-right">
+          <div class="crypto-chip" title="AES-GCM-256 Client Encryption">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>AES-256</span>
+          </div>
+          <button id="theme-toggle" class="theme-toggle-btn" type="button" title="Toggle Theme (Dark / Catppuccin)" aria-label="Toggle Theme">
+            <svg class="theme-icon icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg class="theme-icon icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
         </div>
       </header>
 
@@ -73,7 +91,7 @@
               <span class="field-label" id="sync-id-label">Sync ID</span>
               <div class="field-row">
                 <div class="input-wrap">
-                  <input id="sync-id" type="text" autocomplete="off" spellcheck="false" placeholder="Paste Sync ID from Brave here..." />
+                  <input id="sync-id" type="text" autocomplete="off" spellcheck="false" placeholder="Paste Sync ID from Chromium here..." />
                 </div>
                 <button id="copy-sync-id" class="btn btn-secondary btn-icon-text" type="button" title="Copy Sync ID">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -138,7 +156,7 @@
         </div>
       </section>
 
-      <!-- Firefox Site Picker Section -->
+      <!-- Gecko Site Picker Section -->
       <section id="site-picker" class="card picker-card" hidden>
         <div class="picker-top-bar">
           <span class="picker-subtle-title">Sites to import</span>
@@ -168,8 +186,8 @@
 
       <!-- Primary Actions Deck -->
       <section class="actions">
-        <!-- Brave Side-by-Side Action Row: Delete on Left, Upload on Right -->
-        <div class="steps-row" id="brave-actions-row">
+        <!-- Chromium Side-by-Side Action Row: Delete on Left, Upload on Right -->
+        <div class="steps-row" id="chromium-actions-row">
           <button id="delete-remote-data" class="btn btn-danger btn-step" type="button" title="Delete server database data">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="3 6 5 6 21 6"></polyline>
@@ -188,8 +206,8 @@
           </button>
         </div>
 
-        <!-- Firefox 2-Step Row: Load & Import -->
-        <div class="steps-row" id="firefox-steps-row">
+        <!-- Gecko 2-Step Row: Load & Import -->
+        <div class="steps-row" id="gecko-steps-row">
           <button id="load-sites" class="btn btn-secondary btn-step" type="button">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
@@ -208,7 +226,7 @@
           </button>
         </div>
 
-        <!-- Firefox Clear local cookies button -->
+        <!-- Gecko Clear local cookies button -->
         <button id="clear-all-cookies" class="btn btn-secondary btn-full" type="button">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="3 6 5 6 21 6"></polyline>

@@ -19,7 +19,7 @@ This describes what CookieSync actually stores, uploads, and contacts, based on 
 
 Two kinds of things live in the extension's local storage:
 
-**Settings.** Your Supabase URL and anon key, your Sync ID, whether "Remember passphrase" and daily auto-sync are turned on, the date auto-sync last ran, the list of domains you've imported, when you last synced, and a randomly generated device ID. None of this is cookie data itself.
+**Settings.** Your Supabase URL and anon key, your Sync ID, whether "Remember passphrase" and daily auto-sync are turned on, your theme preference (`themePreference`), the date auto-sync last ran, the list of domains you've imported, when you last synced, and a randomly generated device ID. None of this is cookie data itself.
 
 **A local cookie ledger.** This is the part worth reading carefully. The extension listens for every cookie change event the browser reports, on every site, not only sites you've chosen to sync, and keeps a running record of each cookie's name, value, domain, path, and flags, keyed so that the latest known state of each distinct cookie is kept. This ledger is what gets turned into the encrypted snapshot on upload, and what lets the extension tell you which cookies have been deleted since the last sync.
 
@@ -43,9 +43,9 @@ Turning Remember on is a reasonable choice for a personal device you already tru
 
 ## What gets uploaded
 
-Uploading (the Brave build's "Upload cookies now") encrypts and sends the entire local cookie ledger described above, that is, every cookie currently in the browser across every site, not a filtered subset. There's no per-site opt-in on the upload side; "selective" only applies when importing.
+Uploading (the Chromium build's "Upload cookies now") encrypts and sends the entire local cookie ledger described above, that is, every cookie currently in the browser across every site, not a filtered subset. There's no per-site opt-in on the upload side; "selective" only applies when importing.
 
-Importing (the Firefox build) downloads that same encrypted payload, decrypts it locally, and shows you every domain found inside it before writing anything. Only the domains you tick get written into Firefox's actual cookie store; the rest of what was downloaded and decrypted is discarded in memory and never applied.
+Importing (the Gecko / Firefox build) downloads that same encrypted payload, decrypts it locally, and shows you every domain found inside it before writing anything. Only the domains you tick get written into your browser's actual cookie store; the rest of what was downloaded and decrypted is discarded in memory and never applied.
 
 ## What's encrypted, and what isn't
 
@@ -79,11 +79,11 @@ Nothing else is contacted. There is no CookieSync-operated server of any kind.
 
 ## Deleting your data
 
-**Cookies already written into the browser:** the Firefox build has a **Clear all local cookies** button that removes every cookie in the browser and resets the local ledger, and a small delete icon next to each site in the import list that clears just that domain's cookies. The Brave build doesn't currently expose an equivalent action from the popup.
+**Cookies already written into the browser:** the Gecko / Firefox build has a **Clear all local cookies** button that removes every cookie in the browser and resets the local ledger, and a small delete icon next to each site in the import list that clears just that domain's cookies. The Chromium build doesn't currently expose an equivalent action from the popup.
 
 **Local settings and the ledger:** clear the extension's storage from the browser's own extension management page, or uninstall the extension (see below).
 
-**Data on Supabase:** the Brave build's **Delete server data** button removes the row for the current Sync ID outright, or, if the delete is blocked for some reason, overwrites it with an encrypted empty snapshot instead. You can also delete or truncate the row directly from Supabase's SQL editor. If the `pg_cron` extension is enabled on your project, rows older than 24 hours are purged automatically regardless.
+**Data on Supabase:** the Chromium build's **Delete server data** button removes the row for the current Sync ID outright, or, if the delete is blocked for some reason, overwrites it with an encrypted empty snapshot instead. You can also delete or truncate the row directly from Supabase's SQL editor. If the `pg_cron` extension is enabled on your project, rows older than 24 hours are purged automatically regardless.
 
 ## Uninstalling
 

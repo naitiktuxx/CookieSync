@@ -52,7 +52,7 @@ CookieSync assumes the browser's own `cookies` and `storage` APIs, and the Web C
 ## Known limitations in the current implementation
 
 - The sync engine itself (`syncEngine.ts`), which is where most of the security-relevant logic lives, has no automated test coverage. The existing tests cover the crypto primitives and a handful of pure helper functions, not the orchestration around them.
-- The Brave build has no way, from the popup, to clear its own local cookie ledger. Firefox has a "Clear all local cookies" action that resets both the browser's cookies and the ledger; Brave doesn't expose an equivalent.
+- The Chromium build has no way, from the popup, to clear its own local cookie ledger. Gecko / Firefox has a "Clear all local cookies" action that resets both the browser's cookies and the ledger; Chromium doesn't expose an equivalent.
 - The manifests request the `alarms` permission, but no code in this repository currently calls the alarms API. It isn't a security issue on its own, just a permission that outlived whatever it was originally added for.
 
 ## Reporting a vulnerability

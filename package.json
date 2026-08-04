@@ -7,8 +7,8 @@
   "license": "MIT",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "build:brave": "node scripts/build.mjs brave",
-    "build:firefox": "node scripts/build.mjs firefox",
+    "build:chromium": "node scripts/build.mjs chromium",
+    "build:gecko": "node scripts/build.mjs gecko",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "test": "esbuild src/shared/crypto.test.ts src/shared/domainAllowlist.test.ts src/shared/cookies.test.ts --bundle --format=esm --outdir=dist/tests --platform=node && node --test dist/tests/*.test.js"

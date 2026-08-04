@@ -48,9 +48,35 @@ const lastSyncedBox = document.querySelector<HTMLElement>("#last-synced-box");
 const lastSyncedText = document.querySelector<HTMLElement>("#last-synced-text");
 const statusFooter = document.querySelector<HTMLElement>("#status-footer");
 const statusHeader = document.querySelector<HTMLElement>("#status-header");
+const themeToggleButton = document.querySelector<HTMLButtonElement>("#theme-toggle");
 
 let loadedSites: RemoteSiteOption[] = [];
 let selectedDomains = new Set<string>();
+let currentTheme: "dark" | "catppuccin" = "dark";
+
+function setTheme(theme: "dark" | "catppuccin"): void {
+  currentTheme = theme;
+  document.body.dataset.theme = theme;
+  if (themeToggleButton) {
+    const isDark = theme === "dark";
+    themeToggleButton.title = isDark
+      ? "Current: Dark Mode (Click for Catppuccin)"
+      : "Current: Catppuccin Mode (Click for Dark)";
+    themeToggleButton.setAttribute(
+      "aria-label",
+      isDark ? "Switch to Catppuccin theme" : "Switch to Dark theme"
+    );
+  }
+}
+
+function toggleTheme(): void {
+  const newTheme = currentTheme === "dark" ? "catppuccin" : "dark";
+  setTheme(newTheme);
+  void saveSettingsFromForm({ silent: true })
+    .catch(() => {})
+    .then(() => sendMessage({ type: "save-config", config: { themePreference: newTheme } }))
+    .catch((error) => console.warn("Failed to save theme preference:", error));
+}
 
 function updateLastSyncedDisplay(timestamp?: number): void {
   if (lastSyncedBox) {
@@ -167,6 +193,8 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
     }
   }
 }
+
+themeToggleButton?.addEventListener("click", toggleTheme);
 
 copySyncIdButton?.addEventListener("click", () => {
   const syncId = syncIdInput?.value.trim();
@@ -375,6 +403,7 @@ function addLog(message: string, level: "info" | "success" | "warn" | "error" = 
 async function loadSettings(): Promise<void> {
   try {
     const settings = (await sendMessage({ type: "get-settings" })) as StoredSettings;
+    setTheme(settings.themePreference ?? "dark");
     if (supabaseUrlInput) {
       supabaseUrlInput.value = settings.supabaseUrl ?? DEFAULT_SUPABASE_URL;
     }
@@ -422,38 +451,38 @@ async function loadSettings(): Promise<void> {
 
 function setupTargetUi(): void {
   if (title) {
-    title.textContent = __BROWSER_TARGET__ === "brave" ? "Brave Cookie Publisher" : "Firefox Cookie Consumer";
+    title.textContent = "CookieSync";
   }
 
   if (syncIdLabel) {
-    syncIdLabel.textContent = __BROWSER_TARGET__ === "brave" ? "Sync ID (Copy to Firefox)" : "Sync ID (From Brave)";
+    syncIdLabel.textContent = __BROWSER_TARGET__ === "chromium" ? "Sync ID (Copy to Gecko)" : "Sync ID (From Chromium)";
   }
 
   if (syncIdInput) {
-    syncIdInput.readOnly = __BROWSER_TARGET__ === "brave";
-    syncIdInput.placeholder = __BROWSER_TARGET__ === "brave"
+    syncIdInput.readOnly = __BROWSER_TARGET__ === "chromium";
+    syncIdInput.placeholder = __BROWSER_TARGET__ === "chromium"
       ? "Auto-generated Sync ID..."
-      : "Paste Sync ID from Brave here...";
+      : "Paste Sync ID from Chromium here...";
   }
 
   if (copySyncIdButton) {
-    copySyncIdButton.hidden = __BROWSER_TARGET__ !== "brave";
+    copySyncIdButton.hidden = __BROWSER_TARGET__ !== "chromium";
   }
 
   if (uploadButton) {
-    uploadButton.hidden = __BROWSER_TARGET__ !== "brave";
+    uploadButton.hidden = __BROWSER_TARGET__ !== "chromium";
   }
 
   if (deleteRemoteDataButton) {
-    deleteRemoteDataButton.hidden = __BROWSER_TARGET__ !== "brave";
+    deleteRemoteDataButton.hidden = __BROWSER_TARGET__ !== "chromium";
   }
 
   if (importButton) {
-    importButton.hidden = __BROWSER_TARGET__ !== "firefox";
+    importButton.hidden = __BROWSER_TARGET__ !== "gecko";
   }
 
   if (clearAllCookiesButton) {
-    clearAllCookiesButton.hidden = __BROWSER_TARGET__ !== "firefox";
+    clearAllCookiesButton.hidden = __BROWSER_TARGET__ !== "gecko";
   }
 
   if (saveButton) {
@@ -461,7 +490,7 @@ function setupTargetUi(): void {
   }
 
   if (sitePicker) {
-    sitePicker.hidden = __BROWSER_TARGET__ !== "firefox";
+    sitePicker.hidden = __BROWSER_TARGET__ !== "gecko";
   }
 
   if (targetBadgeIcon) {
@@ -491,7 +520,7 @@ function renderVisibleSites(): void {
   const hasLoadedSites = loadedSites.length > 0;
   const hasVisibleSites = visibleSites.length > 0;
 
-  document.body.classList.toggle("sites-loaded", __BROWSER_TARGET__ === "firefox" && hasLoadedSites);
+  document.body.classList.toggle("sites-loaded", __BROWSER_TARGET__ === "gecko" && hasLoadedSites);
 
   if (siteSearchInput) {
     siteSearchInput.hidden = !hasLoadedSites;
@@ -623,8 +652,8 @@ function updateImportVisibility(): void {
   }
 
   const selectedCount = selectedSiteDomains().length;
-  importButton.hidden = __BROWSER_TARGET__ !== "firefox";
-  importButton.disabled = __BROWSER_TARGET__ === "firefox" && selectedCount === 0;
+  importButton.hidden = __BROWSER_TARGET__ !== "gecko";
+  importButton.disabled = __BROWSER_TARGET__ === "gecko" && selectedCount === 0;
 
   const span = importButton.querySelector("span");
   if (span) {

@@ -33,22 +33,9 @@
   --status-error-text: #f87171;
 }
 
-/* Target: Brave Theme overrides */
-body[data-target="brave"] {
-  --bg-app: #181926;
-  --bg-card: rgba(43, 45, 66, 0.85);
-  --bg-input: #383a4b;
-  --border-card: rgba(255, 255, 255, 0.1);
-  --border-input: rgba(255, 255, 255, 0.16);
-  --border-focus: #51556d;
-  --target-accent: #51556d;
-  --target-accent-hover: #636783;
-  --target-gradient: linear-gradient(135deg, #51556d, #414559);
-  --target-glow: rgba(81, 85, 109, 0.35);
-}
-
-/* Target: Firefox Theme overrides */
-body[data-target="firefox"] {
+/* Default Theme (Dark Mode: Pitch Dark #0b0d14 with Teal accents) */
+:root,
+body[data-theme="dark"] {
   --bg-app: #0b0d14;
   --bg-card: #0b0d14;
   --bg-input: rgba(255, 255, 255, 0.05);
@@ -60,6 +47,21 @@ body[data-target="firefox"] {
   --target-accent-hover: #75d4d7;
   --target-gradient: linear-gradient(135deg, #61c9cc, #46a7aa);
   --target-glow: rgba(97, 201, 204, 0.4);
+}
+
+/* Catppuccin Theme (Light/Slate Mode: #181926 with Catppuccin accents) */
+body[data-theme="catppuccin"] {
+  --bg-app: #181926;
+  --bg-card: rgba(43, 45, 66, 0.85);
+  --bg-input: #383a4b;
+  --border-card: rgba(255, 255, 255, 0.1);
+  --border-input: rgba(255, 255, 255, 0.16);
+  --border-focus: #51556d;
+  --target-accent: #51556d;
+  --target-accent-disabled: #353849;
+  --target-accent-hover: #636783;
+  --target-gradient: linear-gradient(135deg, #51556d, #414559);
+  --target-glow: rgba(81, 85, 109, 0.35);
 }
 
 *,
@@ -173,6 +175,50 @@ h1 {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.3px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--target-accent);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--target-accent);
+  box-shadow: 0 0 10px var(--target-glow);
+}
+
+body[data-theme="dark"] .icon-sun {
+  display: none !important;
+}
+
+body[data-theme="dark"] .icon-moon {
+  display: block !important;
+}
+
+body[data-theme="catppuccin"] .icon-moon {
+  display: none !important;
+}
+
+body[data-theme="catppuccin"] .icon-sun {
+  display: block !important;
 }
 
 /* Glass Cards */
@@ -848,33 +894,32 @@ button:disabled {
   display: flex;
 }
 
-/* Brave Target Specific Layout & Button Styling */
-/* Brave Target Specific Layout & Button Styling */
-body[data-target="brave"] #last-synced-box,
-body[data-target="brave"] #copy-sync-id {
+/* Chromium Target Specific Layout & Button Styling */
+body[data-target="chromium"] #last-synced-box,
+body[data-target="chromium"] #copy-sync-id {
   display: flex !important;
 }
 
-body[data-target="brave"] #brave-actions-row {
+body[data-target="chromium"] #chromium-actions-row {
   display: grid !important;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
   width: 100%;
 }
 
-body[data-target="brave"] #delete-remote-data,
-body[data-target="brave"] #upload-now {
+body[data-target="chromium"] #delete-remote-data,
+body[data-target="chromium"] #upload-now {
   display: flex !important;
 }
 
-body[data-target="brave"] #site-picker,
-body[data-target="brave"] #firefox-steps-row,
-body[data-target="brave"] #clear-all-cookies {
+body[data-target="chromium"] #site-picker,
+body[data-target="chromium"] #gecko-steps-row,
+body[data-target="chromium"] #clear-all-cookies {
   display: none !important;
 }
 
-body[data-target="brave"] .btn-hero:not(:disabled),
-body[data-target="brave"] .btn-primary:not(:disabled) {
+body[data-theme="catppuccin"] .btn-hero:not(:disabled),
+body[data-theme="catppuccin"] .btn-primary:not(:disabled) {
   background: linear-gradient(135deg, #51556d, #414559) !important;
   border-color: #51556d !important;
   color: #ffffff !important;
@@ -882,49 +927,58 @@ body[data-target="brave"] .btn-primary:not(:disabled) {
   box-shadow: 0 4px 16px rgba(81, 85, 109, 0.35) !important;
 }
 
-/* Brave: When Credentials section is expanded, stretch it so action buttons attach right above Activity Log box */
-body[data-target="brave"] #settings-section:not(.collapsed) {
+body[data-theme="dark"] .btn-hero:not(:disabled),
+body[data-theme="dark"] .btn-primary:not(:disabled) {
+  background: linear-gradient(135deg, #61c9cc, #46a7aa) !important;
+  border-color: #61c9cc !important;
+  color: #0b0d14 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 16px rgba(97, 201, 204, 0.4) !important;
+}
+
+/* Chromium: When Credentials section is expanded, stretch it so action buttons attach right above Activity Log box */
+body[data-target="chromium"] #settings-section:not(.collapsed) {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
-body[data-target="brave"] #settings-section:not(.collapsed) .settings-body {
+body[data-target="chromium"] #settings-section:not(.collapsed) .settings-body {
   flex: 1;
   max-height: none !important;
   min-height: 0;
   overflow-y: auto;
 }
 
-/* Firefox Target Specific Layout & Button Styling */
-body[data-target="firefox"] #settings-section:not(.collapsed) .settings-body {
+/* Gecko Target Specific Layout & Button Styling */
+body[data-target="gecko"] #settings-section:not(.collapsed) .settings-body {
   max-height: 284px !important;
 }
 
-body[data-target="firefox"] #last-synced-box {
+body[data-target="gecko"] #last-synced-box {
   display: flex !important;
 }
 
-body[data-target="firefox"] #target-badge-icon {
+body[data-target="gecko"] #target-badge-icon {
   background: linear-gradient(135deg, #1e293b, #0f172a) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
 }
 
-body[data-target="firefox"] #brave-actions-row,
-body[data-target="firefox"] #copy-sync-id {
+body[data-target="gecko"] #chromium-actions-row,
+body[data-target="gecko"] #copy-sync-id {
   display: none !important;
 }
 
-body[data-target="firefox"] #firefox-steps-row {
+body[data-target="gecko"] #gecko-steps-row {
   display: grid !important;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
   width: 100%;
 }
 
-body[data-target="firefox"] #clear-all-cookies {
+body[data-target="gecko"] #clear-all-cookies {
   display: flex !important;
   width: 100%;
 }

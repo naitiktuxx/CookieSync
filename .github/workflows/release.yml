@@ -32,7 +32,7 @@ jobs:
       - name: Verify manifest versions match the release tag
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#v}"
-          for f in manifests/brave.json manifests/firefox.json; do
+          for f in manifests/chromium.json manifests/gecko.json; do
             MANIFEST_VERSION=$(node -p "require('./$f').version")
             if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
               echo "::error::$f version ($MANIFEST_VERSION) does not match tag ($TAG_VERSION)"
@@ -40,43 +40,43 @@ jobs:
             fi
           done
 
-      - name: Build Brave bundle
-        run: npm run build:brave
+      - name: Build Chromium bundle
+        run: npm run build:chromium
 
-      - name: Build Firefox bundle
-        run: npm run build:firefox
+      - name: Build Gecko bundle
+        run: npm run build:gecko
 
-      - name: Package Brave zip
+      - name: Package Chromium zip
         run: |
-          cd dist/brave
-          zip -r "../../cookie-sync-brave-${GITHUB_REF_NAME}.zip" .
+          cd dist/chromium
+          zip -r "../../cookie-sync-chromium-${GITHUB_REF_NAME}.zip" .
           cd -
 
-      # --- Firefox: unsigned fallback zip (always produced) ---
-      - name: Package Firefox zip (unsigned, temporary-load only)
+      # --- Gecko / Firefox: unsigned fallback zip (always produced) ---
+      - name: Package Gecko zip (unsigned, temporary-load only)
         run: |
-          cd dist/firefox
-          zip -r "../../cookie-sync-firefox-${GITHUB_REF_NAME}.zip" .
+          cd dist/gecko
+          zip -r "../../cookie-sync-gecko-${GITHUB_REF_NAME}.zip" .
           cd -
 
-      # --- Firefox: signed .xpi (optional — only runs if AMO secrets are set) ---
-      # To enable persistent Firefox installs (not just "Load Temporary Add-on"),
+      # --- Gecko / Firefox: signed .xpi (optional — only runs if AMO secrets are set) ---
+      # To enable persistent Firefox / Gecko installs (not just "Load Temporary Add-on"),
       # create an account at https://addons.mozilla.org/developers/, generate
       # API credentials under Manage API Keys, and add them as repo secrets:
       #   AMO_JWT_ISSUER, AMO_JWT_SECRET
-      - name: Sign Firefox build with AMO (if credentials configured)
+      - name: Sign Gecko build with AMO (if credentials configured)
         if: ${{ env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != '' }}
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         run: |
           npx web-ext sign \
-            --source-dir=dist/firefox \
+            --source-dir=dist/gecko \
             --artifacts-dir=web-ext-artifacts \
             --api-key="$AMO_JWT_ISSUER" \
             --api-secret="$AMO_JWT_SECRET" \
             --channel=unlisted
-          cp web-ext-artifacts/*.xpi "cookie-sync-firefox-${GITHUB_REF_NAME}.xpi" || true
+          cp web-ext-artifacts/*.xpi "cookie-sync-gecko-${GITHUB_REF_NAME}.xpi" || true
 
       - name: Generate checksums
         run: |
@@ -90,9 +90,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            cookie-sync-brave-*.zip
-            cookie-sync-firefox-*.zip
-            cookie-sync-firefox-*.xpi
+            cookie-sync-chromium-*.zip
+            cookie-sync-gecko-*.zip
+            cookie-sync-gecko-*.xpi
             checksums.txt
           generate_release_notes: true
           fail_on_unmatched_files: false
