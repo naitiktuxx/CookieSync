@@ -64,6 +64,7 @@ let currentTheme: "dark" | "catppuccin" = "dark";
 let currentMode: "online" | "offline" = "online";
 
 function setMode(mode: "online" | "offline"): void {
+  const previousMode = currentMode;
   currentMode = mode;
   document.body.dataset.mode = mode;
   if (modeOnlineButton) {
@@ -87,6 +88,17 @@ function setMode(mode: "online" | "offline"): void {
       settingsStatusBadge.textContent = isOffline ? "Passphrase Required" : "Setup Required";
       settingsStatusBadge.className = "badge-status setup";
     }
+  }
+
+  if (isOffline) {
+    void sendMessage({ type: "get-offline-sites" })
+      .then((response) => {
+        const sites = response as RemoteSiteOption[];
+        renderSites(Array.isArray(sites) ? sites : []);
+      })
+      .catch(() => renderSites([]));
+  } else if (previousMode !== mode) {
+    renderSites([]);
   }
 }
 

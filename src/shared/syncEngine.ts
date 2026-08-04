@@ -100,6 +100,7 @@ export class CookieSyncEngine {
     try {
       snapshot = normalizeSnapshot(await decryptJson<CookieSnapshot>(payload as any, passphrase));
       this.offlineSnapshot = snapshot;
+      await setStorage({ offlineSnapshot: snapshot });
     } catch {
       throw new Error("Decryption Failed: Incorrect passphrase used for this .cokz file.");
     }
@@ -126,15 +127,27 @@ export class CookieSyncEngine {
     return { snapshot, sites };
   }
 
+  private async getOrHydrateOfflineSnapshot(): Promise<CookieSnapshot | undefined> {
+    if (this.offlineSnapshot) {
+      return this.offlineSnapshot;
+    }
+    const { offlineSnapshot } = await getStorage<{ offlineSnapshot?: CookieSnapshot }>(["offlineSnapshot"]);
+    if (offlineSnapshot) {
+      this.offlineSnapshot = offlineSnapshot;
+    }
+    return this.offlineSnapshot;
+  }
+
   async getOfflineSites(): Promise<RemoteSiteOption[]> {
-    if (!this.offlineSnapshot) {
+    const snapshot = await this.getOrHydrateOfflineSnapshot();
+    if (!snapshot) {
       return [];
     }
     const settings = await this.loadSettings();
     const importedDomains = settings.importedDomains ?? [];
     const counts = new Map<string, number>();
 
-    for (const record of this.offlineSnapshot.records) {
+    for (const record of snapshot.records) {
       if (record.deleted) {
         continue;
       }
@@ -154,7 +167,7 @@ export class CookieSyncEngine {
   async importOfflineDomains(domains: string[], providedSnapshot?: CookieSnapshot): Promise<SyncResult> {
     await this.getOrHydratePassphrase();
     const settings = await this.loadSettings();
-    const snapshot = providedSnapshot ?? this.offlineSnapshot;
+    const snapshot = providedSnapshot ?? (await this.getOrHydrateOfflineSnapshot());
     if (!snapshot) {
       throw new Error("No .cokz file loaded. Please load a .cokz file first.");
     }
