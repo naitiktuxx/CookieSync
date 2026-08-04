@@ -64,13 +64,6 @@
           <h1 id="title">CookieSync</h1>
         </div>
         <div class="header-right">
-          <div class="crypto-chip" title="AES-GCM-256 Client-Side End-to-End Encryption" aria-label="AES-GCM-256 Encryption">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-          </div>
-
           <div class="mode-pill-toggle" id="mode-pill" role="radiogroup" aria-label="Sync Mode">
             <button type="button" class="pill-option active" id="mode-online" data-mode="online" title="Online Mode (Supabase Cloud Sync)">
               <span class="status-dot"></span>
@@ -79,6 +72,13 @@
             <button type="button" class="pill-option" id="mode-offline" data-mode="offline" title="Offline Mode (Local .cokz Encrypted File)">
               <span>Offline</span>
             </button>
+          </div>
+
+          <div class="crypto-chip" title="AES-GCM-256 Client-Side End-to-End Encryption" aria-label="AES-GCM-256 Encryption">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
           </div>
 
           <button id="theme-toggle" class="theme-toggle-btn" type="button" title="Toggle Theme (Dark / Catppuccin)" aria-label="Toggle Theme">
