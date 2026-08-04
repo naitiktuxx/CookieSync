@@ -46,8 +46,7 @@ for (const target of targets) {
   const popupHtml = await readFile(path.join(root, "src", "popup", "popup.html"), "utf8");
   await writeFile(path.join(outdir, "popup.html"), popupHtml.replace("./popup.ts", "./popup.js"));
   await copyFile(path.join(root, "src", "popup", "popup.css"), path.join(outdir, "popup.css"));
-  const iconFile = target === "gecko" ? "gecko-icon.png" : "chromium-icon.png";
-  await copyFile(path.join(root, "src", "assets", iconFile), path.join(outdir, "icon.png"));
+  await copyFile(path.join(root, "src", "assets", "icon.png"), path.join(outdir, "icon.png"));
 
   if (target === "gecko") {
     console.log(`Built gecko extension in dist/gecko`);
