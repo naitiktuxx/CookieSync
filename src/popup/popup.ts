@@ -203,7 +203,16 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
   const autoSyncEnabled = Boolean(autoSyncEnabledInput?.checked);
 
   try {
-    await sendMessage({ type: "save-settings", supabaseUrl, supabaseAnonKey, syncId, passphrase, rememberPassphrase, autoSyncEnabled });
+    await sendMessage({
+      type: "save-settings",
+      supabaseUrl,
+      supabaseAnonKey,
+      syncId,
+      passphrase,
+      rememberPassphrase,
+      autoSyncEnabled,
+      syncMode: currentMode
+    });
     
     const isOffline = currentMode === "offline";
     const isFullyConfigured = isOffline
@@ -236,11 +245,13 @@ themeToggleButton?.addEventListener("click", toggleTheme);
 
 modeOnlineButton?.addEventListener("click", () => {
   setMode("online");
+  if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
   void sendMessage({ type: "save-settings", syncMode: "online" }).catch(() => {});
 });
 
 modeOfflineButton?.addEventListener("click", () => {
   setMode("offline");
+  if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
   void sendMessage({ type: "save-settings", syncMode: "offline" }).catch(() => {});
 });
 
@@ -535,9 +546,16 @@ async function loadSettings(): Promise<void> {
   try {
     const settings = (await sendMessage({ type: "get-settings" })) as StoredSettings;
     setTheme(settings.themePreference ?? "dark");
-    setMode(settings.syncMode ?? "online");
-    if (modeOnboardingOverlay) {
-      modeOnboardingOverlay.hidden = settings.syncMode !== undefined;
+    if (settings.syncMode) {
+      setMode(settings.syncMode);
+      if (modeOnboardingOverlay) {
+        modeOnboardingOverlay.hidden = true;
+      }
+    } else {
+      setMode("online");
+      if (modeOnboardingOverlay) {
+        modeOnboardingOverlay.hidden = false;
+      }
     }
     if (supabaseUrlInput) {
       supabaseUrlInput.value = settings.supabaseUrl ?? DEFAULT_SUPABASE_URL;

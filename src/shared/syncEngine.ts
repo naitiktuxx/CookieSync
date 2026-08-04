@@ -57,7 +57,8 @@ export class CookieSyncEngine {
       rememberPassphrase,
       syncPassphrase: rememberPassphrase ? passphraseToUse : undefined,
       supabaseUrl: settings.supabaseUrl !== undefined ? (settings.supabaseUrl ? normalizeSupabaseUrl(settings.supabaseUrl) : "") : existing.supabaseUrl,
-      autoSyncEnabled: settings.autoSyncEnabled !== undefined ? Boolean(settings.autoSyncEnabled) : existing.autoSyncEnabled
+      autoSyncEnabled: settings.autoSyncEnabled !== undefined ? Boolean(settings.autoSyncEnabled) : existing.autoSyncEnabled,
+      syncMode: settings.syncMode !== undefined ? settings.syncMode : existing.syncMode
     });
   }
 
