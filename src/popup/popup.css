@@ -180,6 +180,10 @@ body[data-mode="offline"] #mode-offline {
   color: var(--accent);
 }
 
+body[data-mode="offline"] .online-only-setting {
+  display: none !important;
+}
+
 h1 {
   color: var(--text-primary);
   font-size: 16px;

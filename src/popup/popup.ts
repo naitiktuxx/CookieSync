@@ -73,6 +73,22 @@ function setMode(mode: "online" | "offline"): void {
   if (modeOfflineButton) {
     modeOfflineButton.classList.toggle("active", mode === "offline");
   }
+
+  const passphrase = passphraseInput?.value.trim() ?? "";
+  const isOffline = mode === "offline";
+  const isConfigured = isOffline
+    ? Boolean(passphrase)
+    : Boolean(supabaseUrlInput?.value.trim()) && Boolean(supabaseAnonKeyInput?.value.trim()) && Boolean(syncIdInput?.value.trim()) && Boolean(passphrase);
+
+  if (settingsStatusBadge) {
+    if (isConfigured) {
+      settingsStatusBadge.textContent = isOffline ? "Passphrase Saved ✓" : "Configured ✓";
+      settingsStatusBadge.className = "badge-status configured";
+    } else {
+      settingsStatusBadge.textContent = isOffline ? "Passphrase Required" : "Setup Required";
+      settingsStatusBadge.className = "badge-status setup";
+    }
+  }
 }
 
 function setTheme(theme: "dark" | "catppuccin"): void {
@@ -189,14 +205,17 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
   try {
     await sendMessage({ type: "save-settings", supabaseUrl, supabaseAnonKey, syncId, passphrase, rememberPassphrase, autoSyncEnabled });
     
-    const isFullyConfigured = Boolean(supabaseUrl) && Boolean(supabaseAnonKey) && Boolean(syncId) && Boolean(passphrase);
+    const isOffline = currentMode === "offline";
+    const isFullyConfigured = isOffline
+      ? Boolean(passphrase)
+      : Boolean(supabaseUrl) && Boolean(supabaseAnonKey) && Boolean(syncId) && Boolean(passphrase);
 
     if (settingsStatusBadge) {
       if (isFullyConfigured) {
-        settingsStatusBadge.textContent = "Configured ✓";
+        settingsStatusBadge.textContent = isOffline ? "Passphrase Saved ✓" : "Configured ✓";
         settingsStatusBadge.className = "badge-status configured";
       } else {
-        settingsStatusBadge.textContent = "Setup Required";
+        settingsStatusBadge.textContent = isOffline ? "Passphrase Required" : "Setup Required";
         settingsStatusBadge.className = "badge-status setup";
       }
     }
@@ -538,22 +557,23 @@ async function loadSettings(): Promise<void> {
     if (passphraseInput && settings.syncPassphrase) {
       passphraseInput.value = settings.syncPassphrase;
     }
+    const isOffline = (settings.syncMode ?? "online") === "offline";
     const settingsWithAuth = settings as StoredSettings & { hasPassphrase?: boolean };
     const hasSyncId = Boolean(settings.syncId);
     const hasPassphrase = Boolean(settingsWithAuth.hasPassphrase || settings.syncPassphrase || passphraseInput?.value.trim());
-    const isConfigured = hasSyncId && hasPassphrase;
+    const isConfigured = isOffline ? hasPassphrase : (hasSyncId && hasPassphrase);
 
     if (settingsSection) {
       if (isConfigured) {
         settingsSection.classList.add("collapsed");
         if (settingsStatusBadge) {
-          settingsStatusBadge.textContent = "Configured ✓";
+          settingsStatusBadge.textContent = isOffline ? "Passphrase Saved ✓" : "Configured ✓";
           settingsStatusBadge.className = "badge-status configured";
         }
       } else {
         settingsSection.classList.remove("collapsed");
         if (settingsStatusBadge) {
-          settingsStatusBadge.textContent = "Setup Required";
+          settingsStatusBadge.textContent = isOffline ? "Passphrase Required" : "Setup Required";
           settingsStatusBadge.className = "badge-status setup";
         }
       }
