@@ -127,9 +127,10 @@ main {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: var(--target-gradient);
+  background: transparent !important;
   color: #ffffff;
-  box-shadow: none;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .mode-badge {
@@ -960,11 +961,7 @@ body[data-target="gecko"] #last-synced-box {
   display: flex !important;
 }
 
-body[data-target="gecko"] #target-badge-icon {
-  background: linear-gradient(135deg, #1e293b, #0f172a) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: none !important;
-}
+
 
 body[data-target="gecko"] #chromium-actions-row,
 body[data-target="gecko"] #copy-sync-id {
