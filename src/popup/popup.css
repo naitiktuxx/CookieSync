@@ -1016,7 +1016,19 @@ body[data-mode="offline"][data-target="gecko"] #load-sites {
   display: none !important;
 }
 
-body[data-mode="offline"][data-target="gecko"] #load-cokz-file {
+body[data-mode="offline"] #load-cokz-file {
+  display: inline-flex !important;
+}
+
+body[data-mode="offline"] #site-picker {
+  display: block !important;
+}
+
+body[data-mode="offline"] #gecko-steps-row {
+  display: flex !important;
+}
+
+body[data-mode="offline"] #clear-all-cookies {
   display: inline-flex !important;
 }
 

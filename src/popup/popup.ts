@@ -64,7 +64,6 @@ let currentTheme: "dark" | "catppuccin" = "dark";
 let currentMode: "online" | "offline" = "online";
 
 function setMode(mode: "online" | "offline"): void {
-  const previousMode = currentMode;
   currentMode = mode;
   document.body.dataset.mode = mode;
   if (modeOnlineButton) {
@@ -90,16 +89,7 @@ function setMode(mode: "online" | "offline"): void {
     }
   }
 
-  if (isOffline) {
-    void sendMessage({ type: "get-offline-sites" })
-      .then((response) => {
-        const sites = response as RemoteSiteOption[];
-        renderSites(Array.isArray(sites) ? sites : []);
-      })
-      .catch(() => renderSites([]));
-  } else if (previousMode !== mode) {
-    renderSites([]);
-  }
+  setupTargetUi();
 }
 
 function setTheme(theme: "dark" | "catppuccin"): void {
@@ -257,25 +247,35 @@ themeToggleButton?.addEventListener("click", toggleTheme);
 modeOnlineButton?.addEventListener("click", () => {
   setMode("online");
   if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
+  renderSites([]);
   void sendMessage({ type: "save-settings", syncMode: "online" }).catch(() => {});
 });
 
 modeOfflineButton?.addEventListener("click", () => {
   setMode("offline");
   if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
-  void sendMessage({ type: "save-settings", syncMode: "offline" }).catch(() => {});
+  void saveSettingsFromForm({ silent: true })
+    .then(() => sendMessage({ type: "save-settings", syncMode: "offline" }))
+    .then(() => sendMessage({ type: "get-offline-sites" }))
+    .then((response) => renderSites(Array.isArray(response) ? (response as RemoteSiteOption[]) : []))
+    .catch(() => renderSites([]));
 });
 
 onboardOfflineBtn?.addEventListener("click", () => {
   setMode("offline");
   if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
-  void sendMessage({ type: "save-settings", syncMode: "offline" }).catch(() => {});
+  void saveSettingsFromForm({ silent: true })
+    .then(() => sendMessage({ type: "save-settings", syncMode: "offline" }))
+    .then(() => sendMessage({ type: "get-offline-sites" }))
+    .then((response) => renderSites(Array.isArray(response) ? (response as RemoteSiteOption[]) : []))
+    .catch(() => renderSites([]));
   addLog("Switched to Offline Mode.", "info");
 });
 
 onboardOnlineBtn?.addEventListener("click", () => {
   setMode("online");
   if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
+  renderSites([]);
   void sendMessage({ type: "save-settings", syncMode: "online" }).catch(() => {});
   addLog("Switched to Online Mode.", "info");
 });
@@ -587,6 +587,12 @@ async function loadSettings(): Promise<void> {
     if (passphraseInput && settings.syncPassphrase) {
       passphraseInput.value = settings.syncPassphrase;
     }
+
+    setMode(settings.syncMode ?? "online");
+    if (modeOnboardingOverlay) {
+      modeOnboardingOverlay.hidden = settings.syncMode !== undefined;
+    }
+
     const isOffline = (settings.syncMode ?? "online") === "offline";
     const settingsWithAuth = settings as StoredSettings & { hasPassphrase?: boolean };
     const hasSyncId = Boolean(settings.syncId);
@@ -612,14 +618,13 @@ async function loadSettings(): Promise<void> {
     updateLastSyncedDisplay(settings.lastSyncedAt);
 
     if (isOffline) {
-      void sendMessage({ type: "get-offline-sites" })
-        .then((response) => {
-          const sites = response as RemoteSiteOption[];
-          if (Array.isArray(sites) && sites.length > 0) {
-            renderSites(sites);
-          }
-        })
-        .catch(() => {});
+      try {
+        const response = await sendMessage({ type: "get-offline-sites" });
+        const sites = response as RemoteSiteOption[];
+        renderSites(Array.isArray(sites) ? sites : []);
+      } catch {
+        renderSites([]);
+      }
     }
   } catch (error) {
     addLog(String(error instanceof Error ? error.message : error), "error");
@@ -655,11 +660,11 @@ function setupTargetUi(): void {
   }
 
   if (importButton) {
-    importButton.hidden = __BROWSER_TARGET__ !== "gecko";
+    importButton.hidden = __BROWSER_TARGET__ !== "gecko" && currentMode !== "offline";
   }
 
   if (clearAllCookiesButton) {
-    clearAllCookiesButton.hidden = __BROWSER_TARGET__ !== "gecko";
+    clearAllCookiesButton.hidden = __BROWSER_TARGET__ !== "gecko" && currentMode !== "offline";
   }
 
   if (saveButton) {
@@ -667,7 +672,7 @@ function setupTargetUi(): void {
   }
 
   if (sitePicker) {
-    sitePicker.hidden = __BROWSER_TARGET__ !== "gecko";
+    sitePicker.hidden = __BROWSER_TARGET__ !== "gecko" && currentMode !== "offline";
   }
 
   if (targetBadgeIcon) {
