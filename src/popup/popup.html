@@ -11,6 +11,48 @@
   </head>
   <body>
     <main>
+      <!-- First-Time Mode Selection Modal -->
+      <div id="mode-onboarding-overlay" class="modal-overlay" hidden>
+        <div class="modal-card">
+          <div class="modal-header">
+            <div class="modal-icon-wrap">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <h2>Choose Sync Mode</h2>
+            <p class="modal-subtitle">Select how you want to sync cookies between browsers:</p>
+          </div>
+
+          <div class="mode-options-grid">
+            <button type="button" class="mode-card-option" id="onboard-offline-btn">
+              <div class="mode-card-badge">Offline</div>
+              <div class="mode-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="12" y1="18" x2="12" y2="12"></line>
+                  <line x1="9" y1="15" x2="15" y2="15"></line>
+                </svg>
+              </div>
+              <h3>Offline Mode</h3>
+              <p>Export and import encrypted <code>.cokz</code> files locally. No server or network required.</p>
+            </button>
+
+            <button type="button" class="mode-card-option" id="onboard-online-btn">
+              <div class="mode-card-badge online">Online</div>
+              <div class="mode-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+                </svg>
+              </div>
+              <h3>Online Mode</h3>
+              <p>Sync automatically via your self-hosted Supabase cloud with client-side encryption.</p>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Header Bar -->
       <header class="app-header">
         <div class="brand-group">

@@ -51,6 +51,9 @@ const statusHeader = document.querySelector<HTMLElement>("#status-header");
 const themeToggleButton = document.querySelector<HTMLButtonElement>("#theme-toggle");
 const modeOnlineButton = document.querySelector<HTMLButtonElement>("#mode-online");
 const modeOfflineButton = document.querySelector<HTMLButtonElement>("#mode-offline");
+const modeOnboardingOverlay = document.querySelector<HTMLDivElement>("#mode-onboarding-overlay");
+const onboardOfflineBtn = document.querySelector<HTMLButtonElement>("#onboard-offline-btn");
+const onboardOnlineBtn = document.querySelector<HTMLButtonElement>("#onboard-online-btn");
 const exportCokzButton = document.querySelector<HTMLButtonElement>("#export-cokz-now");
 const loadCokzFileButton = document.querySelector<HTMLButtonElement>("#load-cokz-file");
 const cokzFileInput = document.querySelector<HTMLInputElement>("#cokz-file-input");
@@ -220,6 +223,20 @@ modeOnlineButton?.addEventListener("click", () => {
 modeOfflineButton?.addEventListener("click", () => {
   setMode("offline");
   void sendMessage({ type: "save-settings", syncMode: "offline" }).catch(() => {});
+});
+
+onboardOfflineBtn?.addEventListener("click", () => {
+  setMode("offline");
+  if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
+  void sendMessage({ type: "save-settings", syncMode: "offline" }).catch(() => {});
+  addLog("Switched to Offline Mode.", "info");
+});
+
+onboardOnlineBtn?.addEventListener("click", () => {
+  setMode("online");
+  if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
+  void sendMessage({ type: "save-settings", syncMode: "online" }).catch(() => {});
+  addLog("Switched to Online Mode.", "info");
 });
 
 exportCokzButton?.addEventListener("click", () => {
@@ -500,6 +517,9 @@ async function loadSettings(): Promise<void> {
     const settings = (await sendMessage({ type: "get-settings" })) as StoredSettings;
     setTheme(settings.themePreference ?? "dark");
     setMode(settings.syncMode ?? "online");
+    if (modeOnboardingOverlay) {
+      modeOnboardingOverlay.hidden = settings.syncMode !== undefined;
+    }
     if (supabaseUrlInput) {
       supabaseUrlInput.value = settings.supabaseUrl ?? DEFAULT_SUPABASE_URL;
     }
