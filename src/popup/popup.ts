@@ -715,7 +715,9 @@ function renderVisibleSites(): void {
   }
 
   if (!hasLoadedSites) {
-    sitesContainer.textContent = "There isn't any server data for this Sync ID yet.";
+    sitesContainer.textContent = currentMode === "offline"
+      ? "No .cokz file loaded yet. Click '1. Load .cokz file' below to select your encrypted file."
+      : "There isn't any server data for this Sync ID yet.";
     updateImportVisibility();
     return;
   }
