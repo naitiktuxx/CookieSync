@@ -117,13 +117,6 @@ function isMessage(
     candidate.type === "clear-all-local-cookies" ||
     (candidate.type === "clear-domain-cookies" && typeof candidate.domain === "string") ||
     (candidate.type === "import-domains" && Array.isArray(candidate.domains)) ||
-    (candidate.type === "save-settings" &&
-      (candidate.passphrase === undefined || typeof candidate.passphrase === "string") &&
-      (candidate.supabaseUrl === undefined || typeof candidate.supabaseUrl === "string") &&
-      (candidate.supabaseAnonKey === undefined || typeof candidate.supabaseAnonKey === "string") &&
-      (candidate.syncId === undefined || typeof candidate.syncId === "string") &&
-      (candidate.rememberPassphrase === undefined || typeof candidate.rememberPassphrase === "boolean") &&
-      (candidate.autoSyncEnabled === undefined || typeof candidate.autoSyncEnabled === "boolean") &&
-      (candidate.themePreference === undefined || candidate.themePreference === "dark" || candidate.themePreference === "catppuccin"))
+    candidate.type === "save-settings"
   );
 }
