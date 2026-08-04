@@ -30,6 +30,7 @@ It exists for the ordinary case of wanting to carry a logged-in session from one
 - **Client-side encryption.** Cookie data is encrypted with AES-256-GCM before it ever leaves the browser, using a key derived from your passphrase (PBKDF2-SHA-256, 250,000 iterations).
 - **Self-hosted backend.** You point the extension at your own Supabase project. There's no shared server and no account system, just a URL, an anon key, a generated Sync ID, and a passphrase you choose.
 - **Upload is all-or-nothing, import is selective.** The Chromium build encrypts and uploads the browser's entire cookie set in one payload. The Gecko build lets you pick exactly which domains from that payload get written back into the browser. See [PRIVACY.md](./PRIVACY.md) for what that means in practice.
+- **Dual Sync Modes (Online & Offline).** Switch seamlessly between Supabase cloud sync (Online) and local encrypted file sync (Offline) via the header pill toggle. In Offline mode, export and import passphrase-encrypted `.cokz` files locally without sending data over the network.
 - **Dual Theme Support (Dark & Catppuccin).** Single-click theme toggle in the header, supporting both Deep Dark mode (default) and Catppuccin mode in both Chromium and Gecko builds.
 - **Optional daily auto-sync.** Off by default. When enabled, it runs once per calendar day on browser startup.
 - **Activity log.** The popup keeps a small expandable log of every sync attempt, with the underlying Supabase error message shown rather than hidden.
@@ -112,6 +113,8 @@ Other scripts worth knowing about:
 ## Usage
 
 The popup is titled **CookieSync** in both builds. The Sync ID field label tells you which role a build plays: **Sync ID (Copy to Gecko)** for Chromium Publisher or **Sync ID (From Chromium)** for Gecko Consumer.
+
+**Sync Mode switching:** Click the **Online / Offline** pill toggle in the header to switch between **Online Mode** (cloud sync via Supabase) and **Offline Mode** (local `.cokz` encrypted file sync). In Offline Mode, Chromium exports a passphrase-encrypted `.cokz` file, and Gecko loads and selectively imports cookies directly from `.cokz` files without contacting any server.
 
 **Theme switching:** Click the theme toggle button in the top right of the header bar to switch between **Dark Mode** (default) and **Catppuccin Mode**. Your choice is saved automatically.
 

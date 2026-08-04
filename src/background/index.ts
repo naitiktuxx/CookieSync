@@ -1,6 +1,6 @@
 import { extensionApi } from "../shared/browserApi";
 import { CookieSyncEngine } from "../shared/syncEngine";
-import type { BrowserTarget, SyncDirection } from "../shared/types";
+import type { BrowserTarget, CookieSnapshot, SyncDirection } from "../shared/types";
 
 declare const __BROWSER_TARGET__: BrowserTarget;
 
@@ -51,7 +51,8 @@ async function handleMessage(message: unknown): Promise<unknown> {
       syncId: message.syncId,
       rememberPassphrase: message.rememberPassphrase,
       autoSyncEnabled: message.autoSyncEnabled,
-      themePreference: message.themePreference
+      themePreference: message.themePreference,
+      syncMode: message.syncMode
     });
     return { saved: true };
   }
@@ -76,7 +77,23 @@ async function handleMessage(message: unknown): Promise<unknown> {
     return engine.clearAllLocalCookies();
   }
 
-  return engine.sync(message.direction);
+  if (message.type === "export-offline-cokz") {
+    return engine.exportOfflineCokz();
+  }
+
+  if (message.type === "parse-offline-cokz") {
+    return engine.parseOfflineCokz(message.fileContent);
+  }
+
+  if (message.type === "import-offline-domains") {
+    return engine.importOfflineDomains(message.snapshot, message.domains);
+  }
+
+  if (message.type === "sync") {
+    return engine.sync(message.direction);
+  }
+
+  return { ok: true };
 }
 
 function isMessage(
@@ -85,12 +102,15 @@ function isMessage(
   | { type: "sync"; direction: SyncDirection }
   | { type: "set-passphrase"; passphrase: string }
   | { type: "get-settings" }
-  | { type: "save-settings"; passphrase?: string; supabaseUrl?: string; supabaseAnonKey?: string; syncId?: string; rememberPassphrase?: boolean; autoSyncEnabled?: boolean; themePreference?: "dark" | "catppuccin" }
+  | { type: "save-settings"; passphrase?: string; supabaseUrl?: string; supabaseAnonKey?: string; syncId?: string; rememberPassphrase?: boolean; autoSyncEnabled?: boolean; themePreference?: "dark" | "catppuccin"; syncMode?: "online" | "offline" }
   | { type: "get-remote-sites" }
   | { type: "delete-remote-data" }
   | { type: "clear-domain-cookies"; domain: string }
   | { type: "clear-all-local-cookies" }
-  | { type: "import-domains"; domains: string[] } {
+  | { type: "import-domains"; domains: string[] }
+  | { type: "export-offline-cokz" }
+  | { type: "parse-offline-cokz"; fileContent: string }
+  | { type: "import-offline-domains"; snapshot: CookieSnapshot; domains: string[] } {
   if (!message || typeof message !== "object") {
     return false;
   }
@@ -105,6 +125,9 @@ function isMessage(
     rememberPassphrase?: unknown;
     autoSyncEnabled?: unknown;
     themePreference?: unknown;
+    syncMode?: unknown;
+    fileContent?: string;
+    snapshot?: CookieSnapshot;
     domains?: unknown;
     domain?: unknown;
   };
@@ -117,6 +140,9 @@ function isMessage(
     candidate.type === "clear-all-local-cookies" ||
     (candidate.type === "clear-domain-cookies" && typeof candidate.domain === "string") ||
     (candidate.type === "import-domains" && Array.isArray(candidate.domains)) ||
+    candidate.type === "export-offline-cokz" ||
+    (candidate.type === "parse-offline-cokz" && typeof candidate.fileContent === "string") ||
+    (candidate.type === "import-offline-domains" && Boolean(candidate.snapshot) && Array.isArray(candidate.domains)) ||
     candidate.type === "save-settings"
   );
 }

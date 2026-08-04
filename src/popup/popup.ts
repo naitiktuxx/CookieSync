@@ -49,10 +49,28 @@ const lastSyncedText = document.querySelector<HTMLElement>("#last-synced-text");
 const statusFooter = document.querySelector<HTMLElement>("#status-footer");
 const statusHeader = document.querySelector<HTMLElement>("#status-header");
 const themeToggleButton = document.querySelector<HTMLButtonElement>("#theme-toggle");
+const modeOnlineButton = document.querySelector<HTMLButtonElement>("#mode-online");
+const modeOfflineButton = document.querySelector<HTMLButtonElement>("#mode-offline");
+const exportCokzButton = document.querySelector<HTMLButtonElement>("#export-cokz-now");
+const loadCokzFileButton = document.querySelector<HTMLButtonElement>("#load-cokz-file");
+const cokzFileInput = document.querySelector<HTMLInputElement>("#cokz-file-input");
 
 let loadedSites: RemoteSiteOption[] = [];
 let selectedDomains = new Set<string>();
 let currentTheme: "dark" | "catppuccin" = "dark";
+let currentMode: "online" | "offline" = "online";
+let cachedOfflineSnapshot: any = null;
+
+function setMode(mode: "online" | "offline"): void {
+  currentMode = mode;
+  document.body.dataset.mode = mode;
+  if (modeOnlineButton) {
+    modeOnlineButton.classList.toggle("active", mode === "online");
+  }
+  if (modeOfflineButton) {
+    modeOfflineButton.classList.toggle("active", mode === "offline");
+  }
+}
 
 function setTheme(theme: "dark" | "catppuccin"): void {
   currentTheme = theme;
@@ -194,6 +212,67 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
 
 themeToggleButton?.addEventListener("click", toggleTheme);
 
+modeOnlineButton?.addEventListener("click", () => {
+  setMode("online");
+  void sendMessage({ type: "save-settings", syncMode: "online" }).catch(() => {});
+});
+
+modeOfflineButton?.addEventListener("click", () => {
+  setMode("offline");
+  void sendMessage({ type: "save-settings", syncMode: "offline" }).catch(() => {});
+});
+
+exportCokzButton?.addEventListener("click", () => {
+  addLog("Exporting encrypted .cokz file...");
+  void saveSettingsFromForm({ silent: true })
+    .then(() => sendMessage({ type: "export-offline-cokz" }))
+    .then((response) => {
+      const res = response as { filename: string; content: string };
+      const blob = new Blob([res.content], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = res.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addLog(`Exported encrypted file: ${res.filename}`, "success");
+    })
+    .catch((error) => addLog(String(error.message ?? error), "error"));
+});
+
+loadCokzFileButton?.addEventListener("click", () => {
+  cokzFileInput?.click();
+});
+
+cokzFileInput?.addEventListener("change", () => {
+  const file = cokzFileInput.files?.[0];
+  if (!file) return;
+
+  addLog(`Reading ${file.name}...`);
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const fileContent = e.target?.result as string;
+    if (!fileContent) {
+      addLog("Failed to read file.", "error");
+      return;
+    }
+
+    void saveSettingsFromForm({ silent: true })
+      .then(() => sendMessage({ type: "parse-offline-cokz", fileContent }))
+      .then((response) => {
+        const res = response as { snapshot: any; sites: RemoteSiteOption[] };
+        cachedOfflineSnapshot = res.snapshot;
+        renderSites(res.sites);
+        addLog(`Loaded ${res.sites.length} site(s) from .cokz file.`, "success");
+      })
+      .catch((error) => addLog(String(error.message ?? error), "error"));
+  };
+  reader.readAsText(file);
+  cokzFileInput.value = "";
+});
+
 copySyncIdButton?.addEventListener("click", () => {
   const syncId = syncIdInput?.value.trim();
   if (!syncId) {
@@ -301,6 +380,24 @@ importButton?.addEventListener("click", () => {
     return;
   }
 
+  if (currentMode === "offline") {
+    if (!cachedOfflineSnapshot) {
+      addLog("Load a .cokz file first.", "error");
+      return;
+    }
+    addLog(`Importing ${selectedDomains.length} site(s) from .cokz file...`);
+    void saveSettingsFromForm({ silent: true })
+      .then(() => sendMessage({ type: "import-offline-domains", snapshot: cachedOfflineSnapshot, domains: selectedDomains }))
+      .then((response) => {
+        const res = response as { updatedAt?: number };
+        addLog(formatResult(response), "success");
+        updateImportVisibility();
+        updateLastSyncedDisplay(res?.updatedAt ?? Date.now());
+      })
+      .catch((error) => addLog(String(error.message ?? error), "error"));
+    return;
+  }
+
   addLog(`Importing ${selectedDomains.length} site(s)...`);
   void saveSettingsFromForm({ silent: true })
     .then(() => sendMessage({ type: "import-domains", domains: selectedDomains }))
@@ -402,6 +499,7 @@ async function loadSettings(): Promise<void> {
   try {
     const settings = (await sendMessage({ type: "get-settings" })) as StoredSettings;
     setTheme(settings.themePreference ?? "dark");
+    setMode(settings.syncMode ?? "online");
     if (supabaseUrlInput) {
       supabaseUrlInput.value = settings.supabaseUrl ?? DEFAULT_SUPABASE_URL;
     }

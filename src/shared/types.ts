@@ -15,6 +15,7 @@ export interface StoredSettings {
   deviceId?: string;
   cookieLedger?: Record<string, CookieRecord>;
   themePreference?: "dark" | "catppuccin";
+  syncMode?: "online" | "offline";
 }
 
 export interface SerializableCookie {

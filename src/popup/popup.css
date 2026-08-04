@@ -133,27 +133,51 @@ main {
   box-shadow: none !important;
 }
 
-.mode-badge {
+.mode-pill-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 2px;
+  padding: 2px;
+  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  gap: 2px;
+  margin-bottom: 3px;
 }
 
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 8px #22c55e;
-}
-
-#mode-label {
+.pill-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 16px;
+  border: none;
+  background: transparent;
   color: var(--text-muted);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pill-option:hover {
+  color: var(--text-primary);
+}
+
+.pill-option.active {
+  background: var(--btn-secondary-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-card);
+}
+
+body[data-mode="online"] #mode-online .status-dot {
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+body[data-mode="offline"] #mode-offline {
+  color: var(--accent);
 }
 
 h1 {
@@ -966,6 +990,25 @@ body[data-target="gecko"] #last-synced-box {
 body[data-target="gecko"] #chromium-actions-row,
 body[data-target="gecko"] #copy-sync-id {
   display: none !important;
+}
+
+/* Mode specific button visibility rules */
+body[data-mode="offline"][data-target="chromium"] #upload-now,
+body[data-mode="offline"][data-target="chromium"] #delete-remote-data {
+  display: none !important;
+}
+
+body[data-mode="offline"][data-target="chromium"] #export-cokz-now {
+  display: inline-flex !important;
+  width: 100%;
+}
+
+body[data-mode="offline"][data-target="gecko"] #load-sites {
+  display: none !important;
+}
+
+body[data-mode="offline"][data-target="gecko"] #load-cokz-file {
+  display: inline-flex !important;
 }
 
 body[data-target="gecko"] #gecko-steps-row {

@@ -36,7 +36,7 @@ export class CookieSyncEngine {
     return { ...settings, syncId, hasPassphrase, syncPassphrase: this.sessionPassphrase };
   }
 
-  async saveConfiguration(settings: Partial<Pick<StoredSettings, "syncPassphrase" | "supabaseUrl" | "supabaseAnonKey" | "syncId" | "rememberPassphrase" | "autoSyncEnabled" | "themePreference">>): Promise<void> {
+  async saveConfiguration(settings: Partial<Pick<StoredSettings, "syncPassphrase" | "supabaseUrl" | "supabaseAnonKey" | "syncId" | "rememberPassphrase" | "autoSyncEnabled" | "themePreference" | "syncMode">>): Promise<void> {
     const existing = await this.loadSettings();
     const passphraseToUse = settings.syncPassphrase !== undefined ? settings.syncPassphrase : (this.sessionPassphrase ?? existing.syncPassphrase);
     if (settings.syncPassphrase !== undefined) {
@@ -59,6 +59,100 @@ export class CookieSyncEngine {
       supabaseUrl: settings.supabaseUrl !== undefined ? (settings.supabaseUrl ? normalizeSupabaseUrl(settings.supabaseUrl) : "") : existing.supabaseUrl,
       autoSyncEnabled: settings.autoSyncEnabled !== undefined ? Boolean(settings.autoSyncEnabled) : existing.autoSyncEnabled
     });
+  }
+
+  async exportOfflineCokz(): Promise<{ filename: string; content: string }> {
+    await this.getOrHydratePassphrase();
+    const settings = await this.loadSettings();
+    const passphrase = this.sessionPassphrase ?? settings.syncPassphrase;
+    if (!passphrase) {
+      throw new Error("Set a sync passphrase first.");
+    }
+    const deviceId = settings.deviceId ?? crypto.randomUUID();
+    const snapshot = await this.createSnapshot(settings, deviceId);
+    const encryptedPayload = await encryptJson(snapshot, passphrase);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const filename = `cookiesync-${dateStr}.cokz`;
+    return {
+      filename,
+      content: JSON.stringify(encryptedPayload, null, 2)
+    };
+  }
+
+  async parseOfflineCokz(fileContent: string): Promise<{ snapshot: CookieSnapshot; sites: RemoteSiteOption[] }> {
+    await this.getOrHydratePassphrase();
+    const settings = await this.loadSettings();
+    const passphrase = this.sessionPassphrase ?? settings.syncPassphrase;
+    if (!passphrase) {
+      throw new Error("Set a sync passphrase first.");
+    }
+
+    let payload: unknown;
+    try {
+      payload = JSON.parse(fileContent);
+    } catch {
+      throw new Error("Invalid .cokz file: Failed to parse JSON.");
+    }
+
+    let snapshot: CookieSnapshot;
+    try {
+      snapshot = normalizeSnapshot(await decryptJson<CookieSnapshot>(payload as any, passphrase));
+    } catch {
+      throw new Error("Decryption Failed: Incorrect passphrase used for this .cokz file.");
+    }
+
+    const importedDomains = settings.importedDomains ?? [];
+    const counts = new Map<string, number>();
+
+    for (const record of snapshot.records) {
+      if (record.deleted) {
+        continue;
+      }
+      const domain = cookieSiteDomain(record);
+      counts.set(domain, (counts.get(domain) ?? 0) + 1);
+    }
+
+    const sites: RemoteSiteOption[] = Array.from(counts.entries())
+      .map(([domain, cookieCount]) => ({
+        domain,
+        cookieCount,
+        imported: importedDomains.includes(domain)
+      }))
+      .sort((a, b) => a.domain.localeCompare(b.domain));
+
+    return { snapshot, sites };
+  }
+
+  async importOfflineDomains(snapshot: CookieSnapshot, domains: string[]): Promise<SyncResult> {
+    await this.getOrHydratePassphrase();
+    const settings = await this.loadSettings();
+    const normalizedDomains = normalizeDomains(domains);
+    if (normalizedDomains.length === 0) {
+      throw new Error("Select at least one site to import.");
+    }
+
+    const selectedRecords = snapshot.records.filter((record) => cookieMatchesAllowedDomains(record.domain, normalizedDomains));
+    const importedCookieCount = await this.applyRecords(selectedRecords);
+
+    const importedDomains = Array.from(new Set([...(settings.importedDomains ?? []), ...normalizedDomains])).sort();
+    await this.saveSettings({
+      ...settings,
+      importedDomains,
+      cookieLedger: {
+        ...(settings.cookieLedger ?? {}),
+        ...toLedger(selectedRecords)
+      },
+      lastSyncedAt: snapshot.updatedAt
+    });
+
+    return {
+      direction: "pull",
+      uploaded: false,
+      downloaded: true,
+      cookieCount: importedCookieCount,
+      deletedCount: 0,
+      updatedAt: snapshot.updatedAt
+    };
   }
 
   async runDailyStartupSyncIfNeeded(): Promise<boolean> {

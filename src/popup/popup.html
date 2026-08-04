@@ -20,9 +20,14 @@
             </svg>
           </div>
           <div>
-            <div class="mode-badge">
-              <span class="status-dot"></span>
-              <span id="mode-label">E2E Encrypted</span>
+            <div class="mode-pill-toggle" id="mode-pill" role="radiogroup" aria-label="Sync Mode">
+              <button type="button" class="pill-option active" id="mode-online" data-mode="online" title="Online Mode (Supabase Cloud Sync)">
+                <span class="status-dot"></span>
+                <span>Online</span>
+              </button>
+              <button type="button" class="pill-option" id="mode-offline" data-mode="offline" title="Offline Mode (Local .cokz Encrypted File)">
+                <span>Offline</span>
+              </button>
             </div>
             <h1 id="title">CookieSync</h1>
           </div>
@@ -53,6 +58,8 @@
           </button>
         </div>
       </header>
+
+      <input type="file" id="cokz-file-input" accept=".cokz,application/json" hidden />
 
       <!-- Settings Section (Collapsible) -->
       <section class="card settings-card" id="settings-section">
@@ -204,6 +211,15 @@
             </svg>
             <span>Upload cookies now</span>
           </button>
+
+          <button id="export-cokz-now" class="btn btn-hero btn-step" type="button" hidden>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Export cookies (.cokz)</span>
+          </button>
         </div>
 
         <!-- Gecko 2-Step Row: Load & Import -->
@@ -215,6 +231,16 @@
               <path d="m8 17 4 4 4-4"></path>
             </svg>
             <span class="btn-text">1. Load sites</span>
+          </button>
+
+          <button id="load-cokz-file" class="btn btn-secondary btn-step" type="button" hidden>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+            <span class="btn-text">1. Load .cokz file</span>
           </button>
 
           <button id="import-now" class="btn btn-hero btn-step" type="button" disabled>

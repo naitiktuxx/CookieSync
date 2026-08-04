@@ -19,7 +19,7 @@ This describes what CookieSync actually stores, uploads, and contacts, based on 
 
 Two kinds of things live in the extension's local storage:
 
-**Settings.** Your Supabase URL and anon key, your Sync ID, whether "Remember passphrase" and daily auto-sync are turned on, your theme preference (`themePreference`), the date auto-sync last ran, the list of domains you've imported, when you last synced, and a randomly generated device ID. None of this is cookie data itself.
+**Settings.** Your Supabase URL and anon key, your Sync ID, whether "Remember passphrase" and daily auto-sync are turned on, your theme preference (`themePreference`), your sync mode preference (`syncMode`), the date auto-sync last ran, the list of domains you've imported, when you last synced, and a randomly generated device ID. None of this is cookie data itself.
 
 **A local cookie ledger.** This is the part worth reading carefully. The extension listens for every cookie change event the browser reports, on every site, not only sites you've chosen to sync, and keeps a running record of each cookie's name, value, domain, path, and flags, keyed so that the latest known state of each distinct cookie is kept. This ledger is what gets turned into the encrypted snapshot on upload, and what lets the extension tell you which cookies have been deleted since the last sync.
 
