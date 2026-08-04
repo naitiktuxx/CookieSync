@@ -22,6 +22,7 @@ export interface SyncResult {
 export class CookieSyncEngine {
   private applyingRemote = false;
   private sessionPassphrase?: string;
+  private offlineSnapshot?: CookieSnapshot;
 
   async getSettings(): Promise<StoredSettings & { hasPassphrase?: boolean }> {
     await this.getOrHydratePassphrase();
@@ -98,6 +99,7 @@ export class CookieSyncEngine {
     let snapshot: CookieSnapshot;
     try {
       snapshot = normalizeSnapshot(await decryptJson<CookieSnapshot>(payload as any, passphrase));
+      this.offlineSnapshot = snapshot;
     } catch {
       throw new Error("Decryption Failed: Incorrect passphrase used for this .cokz file.");
     }
@@ -124,9 +126,38 @@ export class CookieSyncEngine {
     return { snapshot, sites };
   }
 
-  async importOfflineDomains(snapshot: CookieSnapshot, domains: string[]): Promise<SyncResult> {
+  async getOfflineSites(): Promise<RemoteSiteOption[]> {
+    if (!this.offlineSnapshot) {
+      return [];
+    }
+    const settings = await this.loadSettings();
+    const importedDomains = settings.importedDomains ?? [];
+    const counts = new Map<string, number>();
+
+    for (const record of this.offlineSnapshot.records) {
+      if (record.deleted) {
+        continue;
+      }
+      const domain = cookieSiteDomain(record);
+      counts.set(domain, (counts.get(domain) ?? 0) + 1);
+    }
+
+    return Array.from(counts.entries())
+      .map(([domain, cookieCount]) => ({
+        domain,
+        cookieCount,
+        imported: importedDomains.includes(domain)
+      }))
+      .sort((a, b) => a.domain.localeCompare(b.domain));
+  }
+
+  async importOfflineDomains(domains: string[], providedSnapshot?: CookieSnapshot): Promise<SyncResult> {
     await this.getOrHydratePassphrase();
     const settings = await this.loadSettings();
+    const snapshot = providedSnapshot ?? this.offlineSnapshot;
+    if (!snapshot) {
+      throw new Error("No .cokz file loaded. Please load a .cokz file first.");
+    }
     const normalizedDomains = normalizeDomains(domains);
     if (normalizedDomains.length === 0) {
       throw new Error("Select at least one site to import.");

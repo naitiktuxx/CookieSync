@@ -62,7 +62,6 @@ let loadedSites: RemoteSiteOption[] = [];
 let selectedDomains = new Set<string>();
 let currentTheme: "dark" | "catppuccin" = "dark";
 let currentMode: "online" | "offline" = "online";
-let cachedOfflineSnapshot: any = null;
 
 function setMode(mode: "online" | "offline"): void {
   currentMode = mode;
@@ -309,8 +308,7 @@ cokzFileInput?.addEventListener("change", () => {
     void saveSettingsFromForm({ silent: true })
       .then(() => sendMessage({ type: "parse-offline-cokz", fileContent }))
       .then((response) => {
-        const res = response as { snapshot: any; sites: RemoteSiteOption[] };
-        cachedOfflineSnapshot = res.snapshot;
+        const res = response as { sites: RemoteSiteOption[] };
         renderSites(res.sites);
         addLog(`Loaded ${res.sites.length} site(s) from .cokz file.`, "success");
       })
@@ -428,18 +426,20 @@ importButton?.addEventListener("click", () => {
   }
 
   if (currentMode === "offline") {
-    if (!cachedOfflineSnapshot) {
-      addLog("Load a .cokz file first.", "error");
-      return;
-    }
     addLog(`Importing ${selectedDomains.length} site(s) from .cokz file...`);
     void saveSettingsFromForm({ silent: true })
-      .then(() => sendMessage({ type: "import-offline-domains", snapshot: cachedOfflineSnapshot, domains: selectedDomains }))
+      .then(() => sendMessage({ type: "import-offline-domains", domains: selectedDomains }))
       .then((response) => {
         const res = response as { updatedAt?: number };
         addLog(formatResult(response), "success");
         updateImportVisibility();
         updateLastSyncedDisplay(res?.updatedAt ?? Date.now());
+        return sendMessage({ type: "get-offline-sites" });
+      })
+      .then((offlineSites) => {
+        if (Array.isArray(offlineSites) && offlineSites.length > 0) {
+          renderSites(offlineSites as RemoteSiteOption[]);
+        }
       })
       .catch((error) => addLog(String(error.message ?? error), "error"));
     return;
@@ -598,6 +598,17 @@ async function loadSettings(): Promise<void> {
     }
 
     updateLastSyncedDisplay(settings.lastSyncedAt);
+
+    if (isOffline) {
+      void sendMessage({ type: "get-offline-sites" })
+        .then((response) => {
+          const sites = response as RemoteSiteOption[];
+          if (Array.isArray(sites) && sites.length > 0) {
+            renderSites(sites);
+          }
+        })
+        .catch(() => {});
+    }
   } catch (error) {
     addLog(String(error instanceof Error ? error.message : error), "error");
   }

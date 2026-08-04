@@ -77,6 +77,10 @@ async function handleMessage(message: unknown): Promise<unknown> {
     return engine.clearAllLocalCookies();
   }
 
+  if (message.type === "get-offline-sites") {
+    return engine.getOfflineSites();
+  }
+
   if (message.type === "export-offline-cokz") {
     return engine.exportOfflineCokz();
   }
@@ -86,7 +90,7 @@ async function handleMessage(message: unknown): Promise<unknown> {
   }
 
   if (message.type === "import-offline-domains") {
-    return engine.importOfflineDomains(message.snapshot, message.domains);
+    return engine.importOfflineDomains(message.domains, message.snapshot);
   }
 
   if (message.type === "sync") {
@@ -104,13 +108,14 @@ function isMessage(
   | { type: "get-settings" }
   | { type: "save-settings"; passphrase?: string; supabaseUrl?: string; supabaseAnonKey?: string; syncId?: string; rememberPassphrase?: boolean; autoSyncEnabled?: boolean; themePreference?: "dark" | "catppuccin"; syncMode?: "online" | "offline" }
   | { type: "get-remote-sites" }
+  | { type: "get-offline-sites" }
   | { type: "delete-remote-data" }
   | { type: "clear-domain-cookies"; domain: string }
   | { type: "clear-all-local-cookies" }
   | { type: "import-domains"; domains: string[] }
   | { type: "export-offline-cokz" }
   | { type: "parse-offline-cokz"; fileContent: string }
-  | { type: "import-offline-domains"; snapshot: CookieSnapshot; domains: string[] } {
+  | { type: "import-offline-domains"; domains: string[]; snapshot?: CookieSnapshot } {
   if (!message || typeof message !== "object") {
     return false;
   }
@@ -136,13 +141,14 @@ function isMessage(
     (candidate.type === "set-passphrase" && typeof candidate.passphrase === "string") ||
     candidate.type === "get-settings" ||
     candidate.type === "get-remote-sites" ||
+    candidate.type === "get-offline-sites" ||
     candidate.type === "delete-remote-data" ||
     candidate.type === "clear-all-local-cookies" ||
     (candidate.type === "clear-domain-cookies" && typeof candidate.domain === "string") ||
     (candidate.type === "import-domains" && Array.isArray(candidate.domains)) ||
     candidate.type === "export-offline-cokz" ||
     (candidate.type === "parse-offline-cokz" && typeof candidate.fileContent === "string") ||
-    (candidate.type === "import-offline-domains" && Boolean(candidate.snapshot) && Array.isArray(candidate.domains)) ||
+    (candidate.type === "import-offline-domains" && Array.isArray(candidate.domains)) ||
     candidate.type === "save-settings"
   );
 }
