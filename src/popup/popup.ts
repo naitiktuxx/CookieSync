@@ -301,6 +301,13 @@ exportCokzButton?.addEventListener("click", () => {
 });
 
 loadCokzFileButton?.addEventListener("click", () => {
+  const passphrase = passphraseInput?.value.trim();
+  if (!passphrase) {
+    addLog("Enter your Sync Passphrase in Settings first.", "error");
+    settingsSection?.classList.remove("collapsed");
+    passphraseInput?.focus();
+    return;
+  }
   cokzFileInput?.click();
 });
 
@@ -321,6 +328,11 @@ cokzFileInput?.addEventListener("change", () => {
       .then(() => sendMessage({ type: "parse-offline-cokz", fileContent }))
       .then((response) => {
         const res = response as { sites: RemoteSiteOption[] };
+        if (!res.sites || res.sites.length === 0) {
+          addLog("No active cookies found in this .cokz file.", "warn");
+          renderSites([]);
+          return;
+        }
         renderSites(res.sites);
         addLog(`Loaded ${res.sites.length} site(s) from .cokz file.`, "success");
       })
@@ -536,6 +548,9 @@ function formatResult(response: unknown): string {
 }
 
 function addLog(message: string, level: "info" | "success" | "warn" | "error" = "info"): void {
+  if (level === "error" || level === "warn") {
+    document.body.classList.add("log-expanded");
+  }
   if (status) {
     const row = document.createElement("div");
     row.className = `log-line ${level}`;
