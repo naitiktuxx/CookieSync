@@ -129,7 +129,7 @@ main {
   border-radius: 10px;
   background: var(--target-gradient);
   color: #ffffff;
-  box-shadow: 0 0 12px var(--target-glow);
+  box-shadow: none;
 }
 
 .mode-badge {
@@ -963,7 +963,7 @@ body[data-target="gecko"] #last-synced-box {
 body[data-target="gecko"] #target-badge-icon {
   background: linear-gradient(135deg, #1e293b, #0f172a) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: none !important;
 }
 
 body[data-target="gecko"] #chromium-actions-row,
