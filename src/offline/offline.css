@@ -54,7 +54,8 @@ body {
 }
 
 .sites-list {
-  max-height: 270px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding-right: 6px;
   scrollbar-width: thin;
@@ -81,31 +82,35 @@ body {
 }
 
 body.sites-expanded .sites-list {
-  max-height: 540px !important;
+  max-height: none !important;
 }
 
 /* 
- * CRITICAL / IMMUTABLE: ACTION BUTTON Y-POSITION LOCK
- * DO NOT EDIT OR RESET THESE CONTAINER HEIGHTS OR MARGINS IN THE FUTURE.
- * The combined height of #settings-section (expanded) and #site-picker (collapsed) 
- * MUST remain equal so that the 3 action buttons (1. Load .cokz file, 2. Import selected,
- * and Clear all local cookies) stay at the exact same Y-position regardless of settings toggle state.
+ * DYNAMIC FLEX LAYOUT (MATCHING CHROMIUM BEHAVIOR)
+ * Allows containers to dynamically expand and fill available height,
+ * keeping action buttons attached right above the Activity Log.
  */
 #settings-section.collapsed ~ #site-picker {
-  height: 326px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   margin-bottom: 12px;
-  flex-shrink: 0;
 }
 
 #settings-section:not(.collapsed) {
-  height: 326px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   margin-bottom: 12px;
   box-sizing: border-box;
-  flex-shrink: 0;
 }
 
 #settings-section:not(.collapsed) .settings-body {
-  max-height: 274px !important;
+  flex: 1;
+  max-height: none !important;
+  min-height: 0;
   overflow-y: auto;
 }
 

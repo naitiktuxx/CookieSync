@@ -1200,24 +1200,28 @@ body[data-target="chromium"] #settings-section:not(.collapsed) .settings-body {
 }
 
 /* 
- * CRITICAL / IMMUTABLE: ACTION BUTTON Y-POSITION LOCK (GECKO)
- * DO NOT EDIT OR RESET THESE CONTAINER HEIGHTS OR MARGINS IN THE FUTURE.
- * Equalized total heights (326px) ensure action buttons (1. Load sites / .cokz, 2. Import selected,
- * and Clear all local cookies) stay at the exact same Y-position matching Picture 1.
+ * DYNAMIC FLEX LAYOUT FOR GECKO (MATCHING CHROMIUM BEHAVIOR)
+ * Dynamically fills available vertical space so action buttons stay attached right above Activity Log.
  */
-body[data-target="gecko"] #settings-section.collapsed ~ #site-picker {
-  height: 326px;
-  flex-shrink: 0;
-}
-
 body[data-target="gecko"] #settings-section:not(.collapsed) {
-  height: 326px;
-  flex-shrink: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 body[data-target="gecko"] #settings-section:not(.collapsed) .settings-body {
-  max-height: 274px !important;
+  flex: 1;
+  max-height: none !important;
+  min-height: 0;
   overflow-y: auto;
+}
+
+body[data-target="gecko"] #settings-section.collapsed ~ #site-picker {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 body[data-target="gecko"] #last-synced-box {
