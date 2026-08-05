@@ -55,6 +55,7 @@ export class CookieSyncEngine {
   private applyingRemote = false;
   private sessionPassphrases: Partial<Record<SettingsScope, string>> = {};
   private offlineSnapshot?: CookieSnapshot;
+  private cookieChangeQueue: Promise<void> = Promise.resolve();
 
   async getSettings(scope: SettingsScope): Promise<ModeSettingsView> {
     await this.getOrHydratePassphrase(scope);
@@ -190,7 +191,10 @@ export class CookieSyncEngine {
       snapshot = normalizeSnapshot(await decryptJson<CookieSnapshot>(payload as EncryptedPayload, passphrase));
       this.offlineSnapshot = snapshot;
       await setStorage({ offlineSnapshot: snapshot });
-    } catch {
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("Invalid encrypted payload structure")) {
+        throw new Error("Invalid .cokz file: Missing or malformed encrypted payload fields.");
+      }
       throw new Error("Decryption Failed: Incorrect passphrase used for this .cokz file.");
     }
 
@@ -210,7 +214,7 @@ export class CookieSyncEngine {
       .map(([domain, cookieCount]) => ({
         domain,
         cookieCount,
-        imported: importedDomains.includes(domain)
+        imported: cookieMatchesAllowedDomains(domain, importedDomains)
       }))
       .sort((a, b) => a.domain.localeCompare(b.domain));
 
@@ -270,7 +274,7 @@ export class CookieSyncEngine {
       .map(([domain, cookieCount]) => ({
         domain,
         cookieCount,
-        imported: importedDomains.includes(domain)
+        imported: cookieMatchesAllowedDomains(domain, importedDomains)
       }))
       .sort((a, b) => a.domain.localeCompare(b.domain));
   }
@@ -354,7 +358,10 @@ export class CookieSyncEngine {
     try {
       snapshot = await this.downloadSnapshot(settings);
     } catch (error) {
-      if (error instanceof Error && error.message === "No cookie upload found for this Sync ID yet.") {
+      if (
+        error instanceof Error &&
+        (error.message.includes("No data accessible") || error.message.includes("No cookie upload found"))
+      ) {
         return [];
       }
       throw error;
@@ -374,7 +381,7 @@ export class CookieSyncEngine {
       .map(([domain, cookieCount]) => ({
         domain,
         cookieCount,
-        imported: importedDomains.includes(domain)
+        imported: cookieMatchesAllowedDomains(domain, importedDomains)
       }))
       .sort((a, b) => a.domain.localeCompare(b.domain));
   }
@@ -563,21 +570,28 @@ export class CookieSyncEngine {
       return false;
     }
 
-    const online = settings.online ?? defaultOnlineSettings();
-    const changedAt = Date.now();
-    const record = changeInfo.removed
-      ? toDeletedCookieRecord(changeInfo.cookie, changedAt)
-      : toCookieRecord(changeInfo.cookie, changedAt);
-    await this.saveSettings({
-      ...settings,
-      online: {
-        ...online,
-        cookieLedger: {
-          ...(online.cookieLedger ?? {}),
-          [cookieKey(record)]: record
+    this.cookieChangeQueue = this.cookieChangeQueue.then(async () => {
+      if (this.applyingRemote) return;
+      const currentSettings = await this.loadSettings();
+      if (currentSettings.syncMode !== "online") return;
+
+      const online = currentSettings.online ?? defaultOnlineSettings();
+      const changedAt = Date.now();
+      const record = changeInfo.removed
+        ? toDeletedCookieRecord(changeInfo.cookie, changedAt)
+        : toCookieRecord(changeInfo.cookie, changedAt);
+      await this.saveSettings({
+        ...currentSettings,
+        online: {
+          ...online,
+          cookieLedger: {
+            ...(online.cookieLedger ?? {}),
+            [cookieKey(record)]: record
+          }
         }
-      }
-    });
+      });
+    }).catch((err) => console.warn("Failed to record cookie change:", err));
+
     return true;
   }
 

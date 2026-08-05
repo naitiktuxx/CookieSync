@@ -115,7 +115,8 @@ export function toDeletedCookieRecord(cookie: chrome.cookies.Cookie, deletedAt =
 
 function toSetDetails(cookie: SerializableCookie): chrome.cookies.SetDetails {
   const isHostCookie = cookie.name.startsWith("__Host-");
-  const isSecureCookie = cookie.name.startsWith("__Secure-") || isHostCookie || cookie.secure;
+  const isSameSiteNone = cookie.sameSite === "no_restriction" || (cookie.sameSite as string) === "none";
+  const isSecureCookie = cookie.name.startsWith("__Secure-") || isHostCookie || cookie.secure || isSameSiteNone;
   const protocol = isSecureCookie ? "https" : "http";
   const host = cookie.domain.startsWith(".") ? cookie.domain.slice(1) : cookie.domain;
   const url = `${protocol}://${host}${cookie.path || "/"}`;
@@ -130,8 +131,13 @@ function toSetDetails(cookie: SerializableCookie): chrome.cookies.SetDetails {
     expirationDate: cookie.expirationDate
   };
 
-  if (!isHostCookie && cookie.domain) {
+  if (!isHostCookie && cookie.domain && cookie.domain.startsWith(".")) {
     details.domain = cookie.domain;
+  }
+
+  const DEFAULT_STORE_IDS = new Set(["0", "firefox-default", "default"]);
+  if (cookie.storeId && !DEFAULT_STORE_IDS.has(cookie.storeId)) {
+    details.storeId = cookie.storeId;
   }
 
   if (cookie.sameSite && (cookie.sameSite as string) !== "unspecified") {
@@ -143,7 +149,8 @@ function toSetDetails(cookie: SerializableCookie): chrome.cookies.SetDetails {
 
 function cookieUrl(cookie: SerializableCookie): string {
   const isHostCookie = cookie.name.startsWith("__Host-");
-  const isSecureCookie = cookie.name.startsWith("__Secure-") || isHostCookie || cookie.secure;
+  const isSameSiteNone = cookie.sameSite === "no_restriction" || (cookie.sameSite as string) === "none";
+  const isSecureCookie = cookie.name.startsWith("__Secure-") || isHostCookie || cookie.secure || isSameSiteNone;
   const protocol = isSecureCookie ? "https" : "http";
   const host = cookie.domain.startsWith(".") ? cookie.domain.slice(1) : cookie.domain;
   return `${protocol}://${host}${cookie.path || "/"}`;

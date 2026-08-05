@@ -99,11 +99,7 @@ setupTargetUi();
 void sendMessage({ type: "register-offline-tab" }).catch(() => {});
 void loadSettings();
 
-const cleanupOfflineSession = () => {
-  void sendMessage({ type: "clear-offline-session" }).catch(() => {});
-};
-window.addEventListener("pagehide", cleanupOfflineSession);
-window.addEventListener("beforeunload", cleanupOfflineSession);
+let isPassphraseTouched = false;
 
 settingsHeader?.addEventListener("click", () => {
   settingsSection?.classList.toggle("collapsed");
@@ -129,6 +125,7 @@ saveButton?.addEventListener("click", () => {
 for (const input of [passphraseInput]) {
   input?.addEventListener("input", () => {
     isExplicitlySaved = false;
+    isPassphraseTouched = true;
     void saveSettingsFromForm({ silent: true }).catch(() => undefined);
   });
 }
@@ -140,7 +137,7 @@ rememberPassphraseInput?.addEventListener("change", () => {
 themeToggleButton?.addEventListener("click", toggleTheme);
 
 async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<void> {
-  const passphrase = passphraseInput?.value ?? "";
+  const passphrase = isPassphraseTouched ? (passphraseInput?.value ?? "") : undefined;
   const rememberPassphrase = Boolean(rememberPassphraseInput?.checked);
 
   try {
@@ -332,7 +329,6 @@ function addLog(message: string, level: "info" | "success" | "warn" | "error" = 
 
 async function loadSettings(): Promise<void> {
   try {
-    await sendMessage({ type: "clear-offline-session" }).catch(() => {});
     const settings = (await sendMessage({ type: "get-settings" })) as ModeSettingsView;
     setTheme(settings.themePreference ?? "dark");
 

@@ -23,6 +23,9 @@ export async function encryptJson(value: unknown, passphrase: string): Promise<E
 }
 
 export async function decryptJson<T>(payload: EncryptedPayload, passphrase: string): Promise<T> {
+  if (!payload || typeof payload !== "object" || typeof payload.salt !== "string" || typeof payload.iv !== "string" || typeof payload.ciphertext !== "string") {
+    throw new Error("Invalid encrypted payload structure: salt, iv, and ciphertext must be non-empty strings.");
+  }
   const salt = base64ToBytes(payload.salt);
   const iv = base64ToBytes(payload.iv);
   const ciphertext = base64ToBytes(payload.ciphertext);

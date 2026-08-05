@@ -182,6 +182,12 @@ statusHeader?.addEventListener("click", () => {
   }
 });
 
+let isPassphraseTouched = false;
+
+passphraseInput?.addEventListener("input", () => {
+  isPassphraseTouched = true;
+});
+
 // Password toggle helper
 togglePassphraseButton?.addEventListener("click", () => {
   if (!passphraseInput) return;
@@ -218,7 +224,7 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
     return;
   }
 
-  const passphrase = passphraseInput?.value ?? "";
+  const passphrase = isPassphraseTouched ? (passphraseInput?.value ?? "") : undefined;
   const supabaseUrl = supabaseUrlInput?.value.trim() ?? "";
   const supabaseAnonKey = supabaseAnonKeyInput?.value.trim() ?? "";
   const syncId = syncIdInput?.value.trim() ?? "";
@@ -363,10 +369,12 @@ deleteRemoteDataButton?.addEventListener("click", () => {
       const result = response as { deleted?: boolean; wiped?: boolean; missing?: boolean };
       updateLastSyncedDisplay(undefined);
       if (result.deleted) {
+        renderSites([]);
         addLog("Server row deleted for this Sync ID.", "success");
         return;
       }
       if (result.wiped) {
+        renderSites([]);
         addLog("DELETE blocked, so encrypted cookie payload was wiped instead.", "warn");
         return;
       }
@@ -548,9 +556,11 @@ async function loadSettings(): Promise<void> {
 
     const isOffline = (settings.syncMode ?? "online") === "offline";
     const settingsWithAuth = settings as ModeSettingsView;
+    const hasSupabaseUrl = Boolean(settings.supabaseUrl);
+    const hasSupabaseAnonKey = Boolean(settings.supabaseAnonKey);
     const hasSyncId = Boolean(settings.syncId);
     const hasPassphrase = Boolean(settingsWithAuth.hasPassphrase || settings.syncPassphrase || passphraseInput?.value.trim());
-    const isConfigured = hasSyncId && hasPassphrase;
+    const isConfigured = hasSupabaseUrl && hasSupabaseAnonKey && hasSyncId && hasPassphrase;
 
     if (settingsSection && !isOffline) {
       if (isConfigured) {

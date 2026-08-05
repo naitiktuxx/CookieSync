@@ -160,4 +160,24 @@ describe("syncEngine settings & passphrase saving", () => {
     assert.deepEqual(stored.offline?.importedDomains, []);
     assert.equal(stored.offline?.lastSyncedAt, undefined);
   });
+
+  it("should return empty array in getRemoteSites when no remote payload is accessible yet", async () => {
+    const engine = new CookieSyncEngine();
+    mockLocalStorage.settings = {
+      syncMode: "online",
+      online: {
+        supabaseUrl: "https://project.supabase.co",
+        supabaseAnonKey: "key",
+        syncId: "sync123",
+        syncPassphrase: "pass"
+      }
+    };
+
+    (engine as unknown as { downloadSnapshot: () => Promise<never> }).downloadSnapshot = async () => {
+      throw new Error("No data accessible for this Sync ID. Either no cookies have been uploaded yet, or your Sync ID / Passphrase is incorrect.");
+    };
+
+    const sites = await engine.getRemoteSites();
+    assert.deepEqual(sites, []);
+  });
 });

@@ -21,12 +21,28 @@ extensionApi.cookies.onChanged.addListener((changeInfo) => {
   void engine.recordCookieChange(changeInfo).catch((error) => console.error("Cookie change tracking failed", error));
 });
 
-let registeredOfflineTabId: number | null = null;
+const registeredOfflineTabIds = new Set<number>();
+
+function syncOfflineTabsOnStartup(): void {
+  const offlineUrl = extensionApi.runtime?.getURL?.("offline.html");
+  if (!offlineUrl || !extensionApi.tabs?.query) return;
+  extensionApi.tabs.query({ url: offlineUrl }, (tabs) => {
+    if (extensionApi.runtime?.lastError) return;
+    for (const tab of tabs ?? []) {
+      if (tab.id !== undefined) {
+        registeredOfflineTabIds.add(tab.id);
+      }
+    }
+  });
+}
+syncOfflineTabsOnStartup();
 
 extensionApi.tabs?.onRemoved?.addListener((tabId) => {
-  if (tabId === registeredOfflineTabId) {
-    registeredOfflineTabId = null;
-    void engine.clearOfflineSession().catch((error) => console.error("Failed to clear offline session on tab close:", error));
+  if (registeredOfflineTabIds.has(tabId)) {
+    registeredOfflineTabIds.delete(tabId);
+    if (registeredOfflineTabIds.size === 0) {
+      void engine.clearOfflineSession().catch((error) => console.error("Failed to clear offline session on tab close:", error));
+    }
   }
 });
 
@@ -45,7 +61,7 @@ async function handleMessage(message: unknown, sender?: chrome.runtime.MessageSe
 
   if (message.type === "register-offline-tab") {
     if (sender?.tab?.id !== undefined) {
-      registeredOfflineTabId = sender.tab.id;
+      registeredOfflineTabIds.add(sender.tab.id);
     }
     return { registered: true };
   }

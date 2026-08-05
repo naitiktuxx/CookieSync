@@ -55,7 +55,7 @@ CookieSync/
 │       ├── supabaseClient.ts   # Thin REST client for one Supabase table
 │       ├── syncEngine.ts       # Core engine managing storage, modes, and sync workflows
 │       └── syncEngine.test.ts  # Unit tests for sync engine configuration and session handling
-├── supabase_schema_queries/    # SQL for the table and its RLS policies
+├── SUPABASE_SCHEMA.md          # SQL for the table and its RLS policies
 └── scripts/build.mjs           # Builds dist/chromium and dist/gecko
 ```
 
@@ -148,7 +148,7 @@ The popup is titled **CookieSync** in both builds. The Sync ID field label tells
 
 1. Create a project at [supabase.com](https://supabase.com).
 2. In **Project Settings → API**, copy the **Project URL** and the **anon / public** key. Don't use the `service_role` key.
-3. Open the **SQL Editor**, paste in the script from [`supabase_schema_queries/Supabase Queries.md`](./supabase_schema_queries/Supabase%20Queries.md), and run it. It creates the `cookie_sync` table, enables row-level security, and adds policies scoped to a matching `auth_hash` header.
+3. Open the **SQL Editor**, paste in the script from [`SUPABASE_SCHEMA.md`](./SUPABASE_SCHEMA.md), and run it. It creates the `cookie_sync` table, enables row-level security, and adds policies scoped to a matching `auth_hash` header.
 4. The last part of that script schedules an hourly job that purges rows older than 24 hours, using the `pg_cron` extension. Not every Supabase plan or region has `pg_cron` available. If that line errors, the table and RLS policies are still created fine, you'll just be relying on the manual **Delete server data** button instead of automatic expiry.
 
 > [!WARNING]

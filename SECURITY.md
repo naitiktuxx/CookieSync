@@ -67,7 +67,7 @@ This is a personal, best-effort project. There's no guaranteed response time, bu
 
 **In scope:**
 - Extension code under `src/` (encryption, cookie handling, message passing)
-- The Supabase schema and RLS policies under `supabase_schema_queries/`
+- The Supabase schema and RLS policies in `SUPABASE_SCHEMA.md`
 - The build and release pipeline (`scripts/`, `.github/workflows/`)
 
 **Out of scope:**
