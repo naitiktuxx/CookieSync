@@ -84,16 +84,24 @@ body.sites-expanded .sites-list {
   max-height: 540px !important;
 }
 
-/* Equalized total height so action buttons stay at exact same Y-position whether settings is collapsed or expanded */
+/* 
+ * CRITICAL / IMMUTABLE: ACTION BUTTON Y-POSITION LOCK
+ * DO NOT EDIT OR RESET THESE CONTAINER HEIGHTS OR MARGINS IN THE FUTURE.
+ * The combined height of #settings-section (expanded) and #site-picker (collapsed) 
+ * MUST remain equal so that the 3 action buttons (1. Load .cokz file, 2. Import selected,
+ * and Clear all local cookies) stay at the exact same Y-position regardless of settings toggle state.
+ */
 #settings-section.collapsed ~ #site-picker {
   height: 338px;
   margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 #settings-section:not(.collapsed) {
   height: 380px;
   margin-bottom: 12px;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 #settings-section:not(.collapsed) .settings-body {

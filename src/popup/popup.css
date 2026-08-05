@@ -1199,13 +1199,20 @@ body[data-target="chromium"] #settings-section:not(.collapsed) .settings-body {
   overflow-y: auto;
 }
 
-/* Gecko Target Specific Layout & Button Styling */
+/* 
+ * CRITICAL / IMMUTABLE: ACTION BUTTON Y-POSITION LOCK (GECKO)
+ * DO NOT EDIT OR RESET THESE CONTAINER HEIGHTS OR MARGINS IN THE FUTURE.
+ * Equalized total heights ensure action buttons (1. Load sites / .cokz, 2. Import selected,
+ * and Clear all local cookies) stay at the exact same Y-position whether settings is collapsed or expanded.
+ */
 body[data-target="gecko"] #settings-section.collapsed ~ #site-picker {
   height: 284px;
+  flex-shrink: 0;
 }
 
 body[data-target="gecko"] #settings-section:not(.collapsed) {
   height: 326px;
+  flex-shrink: 0;
 }
 
 body[data-target="gecko"] #settings-section:not(.collapsed) .settings-body {
