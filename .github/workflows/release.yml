@@ -1,11 +1,11 @@
 name: Release
 
-# Triggers on any tag matching v1.2.3 — push a tag to publish a release:
-#   git tag v0.1.0 && git push origin v0.1.0
+# Triggers on any tag matching v* (e.g. v1.0.0):
+#   git tag v1.0.0 && git push origin v1.0.0
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "v*"
 
 permissions:
   contents: write
@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -29,9 +31,14 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
-      - name: Verify manifest versions match the release tag
+      - name: Verify package and manifest versions match release tag
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::package.json version ($PKG_VERSION) does not match tag ($TAG_VERSION)"
+            exit 1
+          fi
           for f in manifests/chromium.json manifests/gecko.json; do
             MANIFEST_VERSION=$(node -p "require('./$f').version")
             if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
@@ -40,31 +47,10 @@ jobs:
             fi
           done
 
-      - name: Build Chromium bundle
-        run: npm run build:chromium
+      - name: Package Release Artifacts & Generate Changelog
+        run: npm run package
 
-      - name: Build Gecko bundle
-        run: npm run build:gecko
-
-      - name: Package Chromium zip
-        run: |
-          cd dist/chromium
-          zip -r "../../cookie-sync-chromium-${GITHUB_REF_NAME}.zip" .
-          cd -
-
-      # --- Gecko / Firefox: unsigned fallback zip (always produced) ---
-      - name: Package Gecko zip (unsigned, temporary-load only)
-        run: |
-          cd dist/gecko
-          zip -r "../../cookie-sync-gecko-${GITHUB_REF_NAME}.zip" .
-          cd -
-
-      # --- Gecko / Firefox: signed .xpi (optional — only runs if AMO secrets are set) ---
-      # To enable persistent Firefox / Gecko installs (not just "Load Temporary Add-on"),
-      # create an account at https://addons.mozilla.org/developers/, generate
-      # API credentials under Manage API Keys, and add them as repo secrets:
-      #   AMO_JWT_ISSUER, AMO_JWT_SECRET
-      - name: Sign Gecko build with AMO (if credentials configured)
+      - name: Sign Firefox Receiver with AMO (if credentials configured)
         if: ${{ env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != '' }}
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
@@ -76,23 +62,16 @@ jobs:
             --api-key="$AMO_JWT_ISSUER" \
             --api-secret="$AMO_JWT_SECRET" \
             --channel=unlisted
-          cp web-ext-artifacts/*.xpi "cookie-sync-gecko-${GITHUB_REF_NAME}.xpi" || true
+          cp web-ext-artifacts/*.xpi "CookieSync-Firefox-Receiver-${GITHUB_REF_NAME}.xpi" || true
+          sha256sum CookieSync-Chromium-Host-*.zip CookieSync-Firefox-Receiver-*.xpi > SHA256SUMS.txt
 
-      - name: Generate checksums
-        run: |
-          sha256sum cookie-sync-*.zip > checksums.txt
-          if ls cookie-sync-*.xpi >/dev/null 2>&1; then
-            sha256sum cookie-sync-*.xpi >> checksums.txt
-          fi
-          cat checksums.txt
-
-      - name: Create GitHub Release
+      - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            cookie-sync-chromium-*.zip
-            cookie-sync-gecko-*.zip
-            cookie-sync-gecko-*.xpi
-            checksums.txt
+            CookieSync-Chromium-Host-*.zip
+            CookieSync-Firefox-Receiver-*.xpi
+            SHA256SUMS.txt
+          body_path: RELEASE_NOTES.md
           generate_release_notes: true
-          fail_on_unmatched_files: false
+          fail_on_unmatched_files: true

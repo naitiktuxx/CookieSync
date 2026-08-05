@@ -9,6 +9,9 @@
     "build": "node scripts/build.mjs",
     "build:chromium": "node scripts/build.mjs chromium",
     "build:gecko": "node scripts/build.mjs gecko",
+    "package": "node scripts/package.mjs",
+    "changelog": "node scripts/generate-changelog.mjs",
+    "version": "node scripts/sync-versions.mjs && git add manifests/chromium.json manifests/gecko.json",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "test": "esbuild src/shared/crypto.test.ts src/shared/domainAllowlist.test.ts src/shared/cookies.test.ts src/shared/syncEngine.test.ts --bundle --format=esm --outdir=dist/tests --platform=node && node --test dist/tests/*.test.js"

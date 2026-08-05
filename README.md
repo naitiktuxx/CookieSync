@@ -1,6 +1,8 @@
 # CookieSync
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/naitiktuxx/CookieSync)](https://github.com/naitiktuxx/CookieSync/releases/latest)
+[![Total Downloads](https://img.shields.io/github/downloads/naitiktuxx/CookieSync/total)](https://github.com/naitiktuxx/CookieSync/releases)
 
 Sync selected cookies between two browsers through your own Supabase project. Cookies are encrypted before they leave the browser, and Supabase never sees anything but ciphertext.
 
@@ -10,11 +12,14 @@ Sync selected cookies between two browsers through your own Supabase project. Co
 - [Architecture overview](#architecture-overview)
 - [Security overview](#security-overview)
 - [Installation](#installation)
-  - [From a GitHub release](#from-a-github-release)
-  - [Build from source](#build-from-source)
+  - [Chromium Host](#chromium-host)
+  - [Firefox Receiver](#firefox-receiver)
+  - [Verify Release Downloads](#verify-release-downloads)
+  - [Build from Source](#build-from-source)
 - [Usage](#usage)
 - [Supabase setup](#supabase-setup)
 - [Troubleshooting](#troubleshooting)
+- [GitHub CLI Management](#github-cli-management)
 - [License](#license)
 
 ---
@@ -56,7 +61,9 @@ CookieSync/
 │       ├── syncEngine.ts       # Core engine managing storage, modes, and sync workflows
 │       └── syncEngine.test.ts  # Unit tests for sync engine configuration and session handling
 ├── SUPABASE_SCHEMA.md          # SQL for the table and its RLS policies
-└── scripts/build.mjs           # Builds dist/chromium and dist/gecko
+└── scripts/
+    ├── build.mjs               # Builds dist/chromium and dist/gecko
+    └── package.mjs             # Packages release zips/xpi and generates SHA256SUMS.txt
 ```
 
 `scripts/build.mjs` compiles the same source twice, once per manifest, and bakes a `__BROWSER_TARGET__` constant of `"chromium"` or `"gecko"` into each bundle at build time. Which role an installed copy plays (publisher or consumer) is fixed by which bundle you installed, not something you switch at runtime.
@@ -77,41 +84,52 @@ The full threat model, including what's stored locally and what CookieSync can't
 
 ## Installation
 
-### From a GitHub release
+Download prebuilt binaries directly from the latest release:
 
-Every tagged release publishes prebuilt bundles on the [Releases page](https://github.com/naitiktuxx/CookieSync/releases), so you don't need Node or npm to install it.
+[https://github.com/naitiktuxx/CookieSync/releases/latest](https://github.com/naitiktuxx/CookieSync/releases/latest)
 
-1. Download the file for your browser family:
-   - **Chromium (Chrome, Brave, Edge, Arc, Vivaldi):** `cookie-sync-chromium-vX.Y.Z.zip`
-   - **Gecko (Firefox, LibreWolf, Zen Browser):** `cookie-sync-gecko-vX.Y.Z.xpi` if one was published for that release (signed through Mozilla's API), otherwise `cookie-sync-gecko-vX.Y.Z.zip` (unsigned, temporary-load only)
-2. Verify the download, since this handles session cookies:
-   ```bash
-   sha256sum -c checksums.txt --ignore-missing
-   ```
-3. **Chromium browsers:** unzip it, open `chrome://extensions` (or `brave://extensions`, `edge://extensions`), turn on Developer mode, click **Load unpacked**, and select the unzipped folder.
-4. **Gecko / Firefox, signed `.xpi`:** open `about:addons`, click the gear icon, choose **Install Add-on From File**, select the `.xpi`.
-5. **Gecko / Firefox, unsigned `.zip`:** unzip it, open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on**, and select `manifest.json` inside the unzipped folder.
+### Chromium Host
+
+- Download `CookieSync-Chromium-Host-v<version>.zip` from the latest release.
+- Extract the ZIP archive locally.
+- Open `chrome://extensions` (or `brave://extensions`, `edge://extensions`) in your browser.
+- Enable **Developer Mode** (toggle switch in the upper right).
+- Click **Load unpacked** and select the extracted folder.
+
+### Firefox Receiver
+
+- Download `CookieSync-Firefox-Receiver-v<version>.xpi` from the latest release.
+- Drag the `.xpi` file directly into Firefox (or open `about:addons`, click the gear icon, and select **Install Add-on From File...**).
+- Click **Add** when prompted to complete installation.
 
 > [!NOTE]
-> Temporary add-ons in Firefox/Gecko disappear every time you restart the browser. Whether a signed `.xpi` is available depends on whether the repository's AMO signing secrets were configured for that release, check the release notes.
+> Unsigned `.xpi` files only work in supported development environments (such as Firefox Developer Edition, Nightly, or unbranded builds) unless signed by Mozilla. For standard Firefox releases loading temporary add-ons during development, open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on**, and select `manifest.json` from the unzipped build folder.
 
-### Build from source
+### Verify Release Downloads
 
-The CI workflow builds with Node.js 20; that's a safe version to match locally. `package.json` doesn't pin a minimum version, but anything reasonably current should work.
+Verify the authenticity of downloaded release assets using `SHA256SUMS.txt`:
+
+```bash
+sha256sum -c SHA256SUMS.txt --ignore-missing
+```
+
+### Build from Source
+
+The CI workflow builds with Node.js 20; that's a safe version to match locally.
 
 ```bash
 git clone https://github.com/naitiktuxx/CookieSync.git
 cd CookieSync
 npm install
-npm run build:chromium
-npm run build:gecko
+npm run build
+npm run package
 ```
 
-This produces `dist/chromium` and `dist/gecko`. Load either the same way as a downloaded release build, steps 3 to 5 above.
-
-Other scripts worth knowing about:
-- `npm run typecheck`, runs `tsc --noEmit`.
-- `npm test`, bundles the test files with esbuild and executes unit tests under `node --test`. Includes automated test suites for `crypto.ts`, `domainAllowlist.ts`, `cookies.ts`, and `syncEngine.ts` (passphrase session management, scope routing, and offline session teardown).
+Commands available in `package.json`:
+- `npm run build`: Compiles `dist/chromium` and `dist/gecko`.
+- `npm run package`: Builds bundles, packages `CookieSync-Chromium-Host-v<version>.zip` and `CookieSync-Firefox-Receiver-v<version>.xpi`, and generates `SHA256SUMS.txt`.
+- `npm run typecheck`: Runs `tsc --noEmit`.
+- `npm test`: Executes test suites under Node.js test runner.
 
 ## Usage
 
@@ -167,6 +185,43 @@ Click the **Activity Log** header at the bottom of the popup to see full error t
 | `Supabase Anon Key Error (401): ...` | The anon key saved in settings is wrong or has been rotated. | Copy the current anon key from Supabase's API settings page and re-save. |
 | `Network/URL Error: Could not connect to Supabase. ...` | No internet connection, or the Supabase URL is malformed. | Check connectivity and confirm the URL looks like `https://your-ref.supabase.co`. |
 | Auto-sync never seems to run | Most likely the passphrase isn't available at startup. | See the auto-sync note in [Usage](#usage). |
+
+## GitHub CLI Management
+
+You can inspect, create, and manage releases directly using the GitHub CLI (`gh`).
+
+### View Releases
+```bash
+# List all releases
+gh release list
+
+# View details for a specific release
+gh release view v0.1.0
+```
+
+### Create & Edit Releases
+```bash
+# Create a release with assets and custom release notes template
+gh release create v0.1.0 CookieSync-Chromium-Host-v0.1.0.zip CookieSync-Firefox-Receiver-v0.1.0.xpi SHA256SUMS.txt --notes-file .github/RELEASE_NOTES_TEMPLATE.md
+
+# Edit release notes
+gh release edit v0.1.0 --notes "Updated release notes"
+
+# Explicitly mark a release as the latest release
+gh release edit v0.1.0 --latest
+```
+
+### Asset Management
+```bash
+# Upload a new asset to an existing release
+gh release upload v0.1.0 CookieSync-Chromium-Host-v0.1.0.zip
+
+# Upload and overwrite existing release assets using --clobber
+gh release upload v0.1.0 CookieSync-Chromium-Host-v0.1.0.zip CookieSync-Firefox-Receiver-v0.1.0.xpi SHA256SUMS.txt --clobber
+
+# Delete an asset from a release
+gh release delete-asset v0.1.0 SHA256SUMS.txt
+```
 
 ## License
 

@@ -23,10 +23,9 @@ for (const target of targets) {
 
   await writeFile(path.join(outdir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 
-  // Gecko's XPI installer validates sourceMappingURL references and throws
-  // NS_ERROR_FILE_NOT_FOUND if the .map files can't be resolved from inside the XPI.
-  // Disable sourcemaps for Gecko to avoid this.
-  const sourcemap = target === "chromium" ? true : false;
+  // Source maps are disabled by default for clean production distributable artifacts.
+  // Set SOURCEMAP=true in environment if source maps are explicitly desired.
+  const sourcemap = process.env.SOURCEMAP === "true";
 
   await esbuild.build({
     entryPoints: {

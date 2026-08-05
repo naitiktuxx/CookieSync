@@ -1,6 +1,10 @@
 # Dependencies & Build Outputs
 node_modules/
 dist/
+CookieSync-*.zip
+CookieSync-*.xpi
+SHA256SUMS.txt
+RELEASE_NOTES.md
 work/
 outputs/
 *.log
