@@ -19,17 +19,21 @@ This describes what CookieSync actually stores, uploads, and contacts, based on 
 
 Two kinds of things live in the extension's local storage:
 
-**Settings.** Your Supabase URL and anon key, your Sync ID, whether "Remember passphrase" and daily auto-sync are turned on, your theme preference (`themePreference`), your sync mode preference (`syncMode`), the date auto-sync last ran, the list of domains you've imported, when you last synced, and a randomly generated device ID. None of this is cookie data itself.
+**Settings.** Your Supabase URL and anon key, your Sync ID, whether "Remember passphrase" and daily auto-sync are turned on, your theme preference (`themePreference`), your sync mode preference (`syncMode`), the date auto-sync last ran, when you last synced, and a randomly generated device ID. None of this is cookie data itself.
 
-**A local cookie ledger.** This is the part worth reading carefully. The extension listens for every cookie change event the browser reports, on every site, not only sites you've chosen to sync, and keeps a running record of each cookie's name, value, domain, path, and flags, keyed so that the latest known state of each distinct cookie is kept. This ledger is what gets turned into the encrypted snapshot on upload, and what lets the extension tell you which cookies have been deleted since the last sync.
+**Offline Mode Session State.** In Offline Mode, loaded `.cokz` file snapshots (`offlineSnapshot`) and imported domain lists (`importedDomains`) are stored temporarily in memory and local storage during an active session. They are ephemeral and automatically purged whenever the offline tab is closed or a new offline tab opens, ensuring no lingering file data or site lists remain on disk between sessions.
 
-In practice, this means the extension maintains an unencrypted local copy of the current value of every cookie set in your browser since you installed it, whether or not you've ever clicked Upload, and whether or not that site is one you actually intend to sync. Cookies that get deleted are recorded too, but with the value stripped out, only a tombstone marking that a deletion happened, not the value that was deleted.
+**A local cookie ledger.** This is the part worth reading carefully. The extension listens for every cookie change event the browser reports, on every site, not only sites you've chosen to sync, and keeps a running record of each cookie's name, value, domain, path, and flags, keyed so that the latest known state of each distinct cookie is kept. This ledger is what gets turned into the encrypted snapshot on upload or export, and what lets the extension tell you which cookies have been deleted since the last sync.
+
+In practice, this means the extension maintains an unencrypted local copy of the current value of every cookie set in your browser since you installed it, whether or not you've ever clicked Upload or Export, and whether or not that site is one you actually intend to sync. Cookies that get deleted are recorded too, but with the value stripped out, only a tombstone marking that a deletion happened, not the value that was deleted.
 
 If "Remember passphrase" is on, your passphrase is stored here as well. See [the section below](#what-the-remember-passphrase-option-actually-does) for what that specifically means.
 
 ## Where it's stored, and for how long
 
 Settings and the cookie ledger live in `chrome.storage.local`, which is written to disk as part of the browser's extension storage for your profile. It isn't encrypted by the extension, and it isn't cleared automatically. It stays until you clear it yourself, uninstall the extension, or (for cookies specifically) use the local-clearing actions described under [Deleting your data](#deleting-your-data).
+
+Transient `.cokz` snapshots and imported domain lists in Offline Mode are cleared automatically whenever the offline tab closes or opens.
 
 A passphrase entered without "Remember" checked is kept only in the background script's memory and mirrored into `chrome.storage.session`, which the browser itself clears when it closes. It is never written to `chrome.storage.local` in that case.
 

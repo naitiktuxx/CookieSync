@@ -30,7 +30,7 @@ It exists for the ordinary case of wanting to carry a logged-in session from one
 - **Client-side encryption.** Cookie data is encrypted with AES-256-GCM before it ever leaves the browser, using a key derived from your passphrase (PBKDF2-SHA-256, 250,000 iterations).
 - **Self-hosted backend.** You point the extension at your own Supabase project. There's no shared server and no account system, just a URL, an anon key, a generated Sync ID, and a passphrase you choose.
 - **Upload is all-or-nothing, import is selective.** The Chromium build encrypts and uploads the browser's entire cookie set in one payload. The Gecko build lets you pick exactly which domains from that payload get written back into the browser. See [PRIVACY.md](./PRIVACY.md) for what that means in practice.
-- **Dual Sync Modes (Online & Offline).** Switch seamlessly between Supabase cloud sync (Online) and local encrypted file sync (Offline) via the header pill toggle. In Offline mode, export and import passphrase-encrypted `.cokz` files locally without sending data over the network.
+- **Dual Sync Modes (Online & Offline).** Switch seamlessly between Supabase cloud sync (Online) and local encrypted file sync (Offline) via the header pill toggle. In Offline mode, export and import passphrase-encrypted `.cokz` files locally without sending data over the network. For maximum security, offline workspace session state (`.cokz` snapshot and domain selections) is automatically purged whenever the tab is closed or a new offline tab opens.
 - **Dual Theme Support (Dark & Catppuccin).** Single-click theme toggle in the header, supporting both Deep Dark mode (default) and Catppuccin mode in both Chromium and Gecko builds.
 - **Optional daily auto-sync.** Off by default. When enabled, it runs once per calendar day on browser startup.
 - **Activity log.** The popup keeps a small expandable log of every sync attempt, with the underlying Supabase error message shown rather than hidden.
@@ -46,13 +46,15 @@ CookieSync/
 │   └── gecko.json      # Manifest V2, for the consumer build (Gecko)
 ├── src/
 │   ├── background/     # Message handling, cookie-change tracking, daily auto-sync
+│   ├── offline/        # Dedicated offline workspace tab UI and event handlers
 │   ├── popup/          # Settings form, site picker, activity log
 │   └── shared/
 │       ├── crypto.ts           # AES-GCM encryption, PBKDF2 key + auth-hash derivation
 │       ├── cookies.ts          # Reading, writing, and diffing cookies
 │       ├── domainAllowlist.ts  # Domain matching used at import time
 │       ├── supabaseClient.ts   # Thin REST client for one Supabase table
-│       └── syncEngine.ts       # Ties the above together
+│       ├── syncEngine.ts       # Core engine managing storage, modes, and sync workflows
+│       └── syncEngine.test.ts  # Unit tests for sync engine configuration and session handling
 ├── supabase_schema_queries/    # SQL for the table and its RLS policies
 └── scripts/build.mjs           # Builds dist/chromium and dist/gecko
 ```
@@ -65,8 +67,9 @@ On the Supabase side there's a single table, `cookie_sync`, holding one row per 
 
 ## Security overview
 
-- Cookie payloads are encrypted client-side (AES-256-GCM, PBKDF2-SHA-256 key derivation at 250,000 iterations) before upload. Supabase stores ciphertext only.
+- Cookie payloads are encrypted client-side (AES-256-GCM, PBKDF2-SHA-256 key derivation at 250,000 iterations) before upload or export. Supabase stores ciphertext only, and `.cokz` files contain encrypted data only.
 - Your passphrase is never sent to Supabase. A separate value derived from it is sent as an auth header so Supabase's row-level security can tell requests apart, but that value can't be turned back into your passphrase or your encryption key.
+- Offline Mode enforces session isolation: closing an offline tab or opening a new one automatically wipes any `.cokz` snapshot and site selection list from memory and storage, requiring a fresh file import every time.
 - There's no account system. Access to a row is controlled entirely by knowing its Sync ID and passphrase, so treat both like a shared password.
 - This project has not had an independent security audit.
 
@@ -108,7 +111,7 @@ This produces `dist/chromium` and `dist/gecko`. Load either the same way as a do
 
 Other scripts worth knowing about:
 - `npm run typecheck`, runs `tsc --noEmit`.
-- `npm test`, bundles the test files with esbuild and runs them under `node --test`. Coverage is currently limited to `crypto.ts`, `domainAllowlist.ts`, and a few pure helpers in `cookies.ts`, the sync engine itself has no automated tests yet.
+- `npm test`, bundles the test files with esbuild and executes unit tests under `node --test`. Includes automated test suites for `crypto.ts`, `domainAllowlist.ts`, `cookies.ts`, and `syncEngine.ts` (passphrase session management, scope routing, and offline session teardown).
 
 ## Usage
 

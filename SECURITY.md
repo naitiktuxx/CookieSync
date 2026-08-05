@@ -10,7 +10,7 @@ The design goal is narrow: keep Supabase, and anyone who compromises Supabase, f
 
 ## Encryption model
 
-Every upload is encrypted client-side with **AES-256-GCM** through the Web Crypto API (`crypto.subtle`). A fresh 16-byte salt and 12-byte IV are generated with `crypto.getRandomValues()` for every single payload, they are never reused across uploads. The resulting ciphertext, salt, IV, KDF name, and iteration count are what actually reach Supabase; the plaintext snapshot and your passphrase never do.
+Every upload and exported `.cokz` file is encrypted client-side with **AES-256-GCM** through the Web Crypto API (`crypto.subtle`). A fresh 16-byte salt and 12-byte IV are generated with `crypto.getRandomValues()` for every single payload, they are never reused across uploads or file exports. The resulting ciphertext, salt, IV, KDF name, and iteration count are what actually reach Supabase or get written to `.cokz` files; the plaintext snapshot and your passphrase never do.
 
 ## Key derivation
 
@@ -23,11 +23,13 @@ Two separate values are derived from your passphrase, for two separate purposes:
 
 These two derivations are intentionally different values with different salts, so having one doesn't give you the other. The auth hash exists purely so Supabase's row-level security can distinguish requests; it is not, and was never meant to be, a second encryption key. It's worth noting explicitly that 50,000 iterations is lower than the 250,000 used for the encryption key. That's a defensible tradeoff, since Supabase only ever sees ciphertext regardless of the auth hash, but a leaked auth hash is somewhat cheaper to attack offline than a leaked encrypted payload would be.
 
-## Authentication model
+In **Offline Mode**, `.cokz` files use the 250,000-iteration key derivation directly and do not attach or embed `auth_hash` headers, ensuring offline payload files contain strictly ciphertext.
+
+## Authentication and session isolation model
 
 There are no user accounts. A "session" is a Sync ID (a random UUID) paired with a passphrase you choose. Whoever holds both can read, overwrite, or delete that row. The first successful write to a given Sync ID sets its `auth_hash`; every request after that, including reads, must present a header that matches it. If you lose the passphrase, the encrypted data on the server is not recoverable by any means built into this project.
 
-This is a shared-secret model, not identity-based authentication. It's simple by design, but it means the Sync ID and passphrase together are the entire access control, not the passphrase alone.
+**Offline Mode Session Teardown:** Offline mode enforces strict per-session isolation. Whenever an `offline.html` tab is closed or a new offline workspace tab is opened, the in-memory and local storage copies of the `.cokz` snapshot (`offlineSnapshot`) and imported site selections (`importedDomains`) are immediately wiped. If "Remember passphrase" is disabled, the session passphrase is also erased. Opening an offline tab always requires loading a fresh `.cokz` file.
 
 ## Browser trust assumptions
 
@@ -37,6 +39,7 @@ CookieSync assumes the browser's own `cookies` and `storage` APIs, and the Web C
 
 - **A Supabase data breach, or a curious party with database access.** They see ciphertext, a non-reversible auth hash, and a timestamp. Recovering cookie values without the passphrase means attacking AES-256-GCM directly, not reading a database dump.
 - **Network interception between your browser and Supabase.** The same ciphertext and auth hash are all that cross the wire; the passphrase and the encryption key derived from it never are.
+- **Offline file leakage across browser restarts.** `.cokz` snapshots and site picker selections are purged on tab close/open, preventing persistent plaintext or decrypted site lists from accumulating on disk.
 
 ## What CookieSync does not protect against
 
@@ -51,7 +54,6 @@ CookieSync assumes the browser's own `cookies` and `storage` APIs, and the Web C
 
 ## Known limitations in the current implementation
 
-- The sync engine itself (`syncEngine.ts`), which is where most of the security-relevant logic lives, has no automated test coverage. The existing tests cover the crypto primitives and a handful of pure helper functions, not the orchestration around them.
 - The Chromium build has no way, from the popup, to clear its own local cookie ledger. Gecko / Firefox has a "Clear all local cookies" action that resets both the browser's cookies and the ledger; Chromium doesn't expose an equivalent.
 - The manifests request the `alarms` permission, but no code in this repository currently calls the alarms API. It isn't a security issue on its own, just a permission that outlived whatever it was originally added for.
 
