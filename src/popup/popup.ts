@@ -62,6 +62,7 @@ let loadedSites: RemoteSiteOption[] = [];
 let selectedDomains = new Set<string>();
 let currentTheme: "dark" | "catppuccin" = "dark";
 let currentMode: "online" | "offline" = "online";
+let isExplicitlySaved = false;
 
 function setMode(mode: "online" | "offline"): void {
   currentMode = mode;
@@ -79,13 +80,14 @@ function setMode(mode: "online" | "offline"): void {
     const syncId = syncIdInput?.value.trim() ?? "";
     const passphrase = passphraseInput?.value.trim() ?? "";
     const isConfigured = Boolean(supabaseUrl) && Boolean(supabaseAnonKey) && Boolean(syncId) && Boolean(passphrase);
+    const isRemembered = Boolean(rememberPassphraseInput?.checked);
 
     if (settingsStatusBadge) {
-      if (isConfigured) {
-        settingsStatusBadge.textContent = "Configured ✓";
+      if (isConfigured && isExplicitlySaved) {
+        settingsStatusBadge.textContent = isRemembered ? "Passphrase Remembered ✓" : "Passphrase Set (Session)";
         settingsStatusBadge.className = "badge-status configured";
       } else {
-        settingsStatusBadge.textContent = "Setup Required";
+        settingsStatusBadge.textContent = "Save Pass First";
         settingsStatusBadge.className = "badge-status setup";
       }
     }
@@ -191,6 +193,7 @@ togglePassphraseButton?.addEventListener("click", () => {
 });
 
 saveButton?.addEventListener("click", () => {
+  isExplicitlySaved = true;
   void saveSettingsFromForm({ silent: false }).catch(() => undefined);
 });
 
@@ -198,6 +201,7 @@ saveButton?.addEventListener("click", () => {
 const autoSaveInputs = [supabaseUrlInput, supabaseAnonKeyInput, syncIdInput, passphraseInput];
 for (const input of autoSaveInputs) {
   input?.addEventListener("input", () => {
+    isExplicitlySaved = false;
     void saveSettingsFromForm({ silent: true }).catch(() => undefined);
   });
 }
@@ -241,18 +245,20 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
     const isFullyConfigured = Boolean(supabaseUrl) && Boolean(supabaseAnonKey) && Boolean(syncId) && Boolean(passphrase);
 
     if (settingsStatusBadge) {
-      if (isFullyConfigured) {
-        settingsStatusBadge.textContent = "Configured ✓";
+      if (isFullyConfigured && isExplicitlySaved) {
+        settingsStatusBadge.textContent = rememberPassphrase ? "Passphrase Remembered ✓" : "Passphrase Set (Session)";
         settingsStatusBadge.className = "badge-status configured";
       } else {
-        settingsStatusBadge.textContent = "Setup Required";
+        settingsStatusBadge.textContent = "Save Pass First";
         settingsStatusBadge.className = "badge-status setup";
       }
     }
     if (!silent) {
-      addLog(isFullyConfigured ? (rememberPassphrase ? "Online settings saved with passphrase." : "Online settings saved.") : "Partial online settings saved.", "success");
       if (isFullyConfigured) {
+        addLog(rememberPassphrase ? "Passphrase remembered for future sessions." : "Passphrase saved for current session.", "success");
         settingsSection?.classList.add("collapsed");
+      } else {
+        addLog("Partial online settings saved.", "success");
       }
     }
   } catch (error) {
@@ -551,17 +557,18 @@ async function loadSettings(): Promise<void> {
     const hasSyncId = Boolean(settings.syncId);
     const hasPassphrase = Boolean(settingsWithAuth.hasPassphrase || settings.syncPassphrase || passphraseInput?.value.trim());
     const isConfigured = hasSyncId && hasPassphrase;
+    isExplicitlySaved = Boolean(settings.rememberPassphrase && settings.syncPassphrase);
 
     if (settingsSection && !isOffline) {
-      if (isConfigured) {
+      if (isConfigured && isExplicitlySaved) {
         settingsSection.classList.add("collapsed");
         if (settingsStatusBadge) {
-          settingsStatusBadge.textContent = "Configured ✓";
+          settingsStatusBadge.textContent = settings.rememberPassphrase ? "Passphrase Remembered ✓" : "Passphrase Set (Session)";
           settingsStatusBadge.className = "badge-status configured";
         }
       } else {
         if (settingsStatusBadge) {
-          settingsStatusBadge.textContent = "Setup Required";
+          settingsStatusBadge.textContent = "Save Pass First";
           settingsStatusBadge.className = "badge-status setup";
         }
       }

@@ -64,15 +64,15 @@ function toggleTheme(): void {
 function updateSettingsBadge(hasPassphrase: boolean): void {
   if (!settingsStatusBadge) return;
   const isRemembered = Boolean(rememberPassphraseInput?.checked);
-  if (hasPassphrase) {
-    if (isRemembered && isExplicitlySaved) {
-      settingsStatusBadge.textContent = "Passphrase Saved ✓";
+  if (hasPassphrase && isExplicitlySaved) {
+    if (isRemembered) {
+      settingsStatusBadge.textContent = "Passphrase Remembered ✓";
     } else {
-      settingsStatusBadge.textContent = "Passphrase Set ✓";
+      settingsStatusBadge.textContent = "Passphrase Set (Session)";
     }
     settingsStatusBadge.className = "badge-status configured";
   } else {
-    settingsStatusBadge.textContent = "Passphrase Required";
+    settingsStatusBadge.textContent = "Save Pass First";
     settingsStatusBadge.className = "badge-status setup";
   }
 }
@@ -153,9 +153,11 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
     });
     updateSettingsBadge(Boolean(passphrase));
     if (!silent) {
-      addLog(Boolean(passphrase) ? "Passphrase saved." : "Partial settings saved.", "success");
       if (passphrase) {
+        addLog(rememberPassphrase ? "Passphrase remembered for future sessions." : "Passphrase saved for current session.", "success");
         settingsSection?.classList.add("collapsed");
+      } else {
+        addLog("Partial settings saved.", "success");
       }
     }
   } catch (error) {
