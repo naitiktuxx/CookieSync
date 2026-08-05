@@ -27,13 +27,53 @@ const statusFooter = document.querySelector<HTMLElement>("#status-footer");
 const statusHeader = document.querySelector<HTMLElement>("#status-header");
 const themeToggleButton = document.querySelector<HTMLButtonElement>("#theme-toggle");
 
-const EXPAND_ICON_SVG = `<svg class="expand-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>`;
-const COMPACT_ICON_SVG = `<svg class="expand-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>`;
+const SVG_NS = "http://www.w3.org/2000/svg";
 
-let loadedSites: RemoteSiteOption[] = [];
-let selectedDomains = new Set<string>();
-let currentTheme: "dark" | "catppuccin" = "dark";
-let isExplicitlySaved = false;
+function createSvgElement(
+  tag: string,
+  attrs: Record<string, string>,
+  children: SVGElement[] = []
+): SVGElement {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    el.setAttribute(key, value);
+  }
+  for (const child of children) {
+    el.append(child);
+  }
+  return el;
+}
+
+function createExpandIconSvg(): SVGElement {
+  return createSvgElement("svg", { class: "expand-icon", width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2" }, [
+    createSvgElement("polyline", { points: "15 3 21 3 21 9" }),
+    createSvgElement("polyline", { points: "9 21 3 21 3 15" }),
+    createSvgElement("line", { x1: "21", y1: "3", x2: "14", y2: "10" }),
+    createSvgElement("line", { x1: "3", y1: "21", x2: "10", y2: "14" })
+  ]);
+}
+
+function createCompactIconSvg(): SVGElement {
+  return createSvgElement("svg", { class: "expand-icon", width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2" }, [
+    createSvgElement("polyline", { points: "4 14 10 14 10 20" }),
+    createSvgElement("polyline", { points: "20 10 14 10 14 4" }),
+    createSvgElement("line", { x1: "14", y1: "10", x2: "21", y2: "3" }),
+    createSvgElement("line", { x1: "3", y1: "21", x2: "10", y2: "14" })
+  ]);
+}
+
+function createCheckmarkIconSvg(): SVGElement {
+  return createSvgElement("svg", { width: "11", height: "11", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "3" }, [
+    createSvgElement("polyline", { points: "20 6 9 17 4 12" })
+  ]);
+}
+
+function createTrashIconSvg(): SVGElement {
+  return createSvgElement("svg", { width: "12", height: "12", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2" }, [
+    createSvgElement("polyline", { points: "3 6 5 6 21 6" }),
+    createSvgElement("path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" })
+  ]);
+}
 
 function updateExpandSitesButton(): void {
   if (!expandSitesButton) return;
@@ -41,7 +81,7 @@ function updateExpandSitesButton(): void {
   const titleText = isExpanded ? "Compact list" : "Expand list";
   expandSitesButton.title = titleText;
   expandSitesButton.setAttribute("aria-label", titleText);
-  expandSitesButton.innerHTML = isExpanded ? COMPACT_ICON_SVG : EXPAND_ICON_SVG;
+  expandSitesButton.replaceChildren(isExpanded ? createCompactIconSvg() : createExpandIconSvg());
 }
 
 function setTheme(theme: "dark" | "catppuccin"): void {
@@ -90,7 +130,14 @@ function updateLastSyncedDisplay(timestamp?: number): void {
 function setupTargetUi(): void {
   document.body.dataset.target = __BROWSER_TARGET__;
   if (targetBadgeIcon) {
-    targetBadgeIcon.innerHTML = `<img src="icon.png" width="22" height="22" style="object-fit: contain; display: block;" alt="Cookie Sync" />`;
+    const img = document.createElement("img");
+    img.src = "icon.png";
+    img.width = 22;
+    img.height = 22;
+    img.style.objectFit = "contain";
+    img.style.display = "block";
+    img.alt = "Cookie Sync";
+    targetBadgeIcon.replaceChildren(img);
   }
   updateImportVisibility();
 }
@@ -450,12 +497,9 @@ function renderVisibleSites(): void {
       const importedBadge = document.createElement("span");
       importedBadge.className = "badge-imported";
       importedBadge.title = "Previously imported";
-      importedBadge.innerHTML = `
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-        <span>Imported</span>
-      `;
+      const textSpan = document.createElement("span");
+      textSpan.textContent = "Imported";
+      importedBadge.append(createCheckmarkIconSvg(), textSpan);
       right.append(importedBadge);
     }
 
@@ -467,12 +511,7 @@ function renderVisibleSites(): void {
     deleteBtn.type = "button";
     deleteBtn.className = "btn-delete-site";
     deleteBtn.title = `Clear local cookies for ${site.domain}`;
-    deleteBtn.innerHTML = `
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="3 6 5 6 21 6"></polyline>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-      </svg>
-    `;
+    deleteBtn.append(createTrashIconSvg());
     deleteBtn.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();

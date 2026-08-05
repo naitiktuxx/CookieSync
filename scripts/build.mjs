@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import esbuild from "esbuild";
@@ -46,7 +46,14 @@ for (const target of targets) {
   const popupHtml = await readFile(path.join(root, "src", "popup", "popup.html"), "utf8");
   await writeFile(path.join(outdir, "popup.html"), popupHtml.replace("./popup.ts", "./popup.js"));
   await copyFile(path.join(root, "src", "popup", "popup.css"), path.join(outdir, "popup.css"));
-  await copyFile(path.join(root, "src", "assets", "icon.png"), path.join(outdir, "icon.png"));
+  
+  const assetsDir = path.join(root, "src", "assets");
+  const assetFiles = await readdir(assetsDir);
+  for (const file of assetFiles) {
+    if (file.endsWith(".png")) {
+      await copyFile(path.join(assetsDir, file), path.join(outdir, file));
+    }
+  }
 
   const offlineHtml = await readFile(path.join(root, "src", "offline", "offline.html"), "utf8");
   await writeFile(path.join(outdir, "offline.html"), offlineHtml.replace("./offline.ts", "./offline.js"));
