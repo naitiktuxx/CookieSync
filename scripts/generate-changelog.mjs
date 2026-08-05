@@ -64,28 +64,44 @@ export async function generateChangelog() {
 
   let changelog = `# CookieSync v${version}\n\n`;
 
-  if (added.length > 0) {
-    changelog += "## Added\n";
-    added.forEach((item) => (changelog += `- ${item}\n`));
-    changelog += "\n";
-  }
+  if (version === "0.1.1") {
+    changelog += `## Fixed
+- Fixed Mozilla Add-on Validator requirements.
+- Added required Firefox data_collection_permissions.
+- Added properly sized extension icons.
+- Replaced unsafe innerHTML usage with DOM APIs.
+- Improved release packaging.
 
-  if (changed.length > 0) {
-    changelog += "## Changed\n";
-    changed.forEach((item) => (changelog += `- ${item}\n`));
-    changelog += "\n";
-  }
+## Changed
+- Improved Firefox compatibility.
+- Improved release validation.
+- Updated build pipeline.
 
-  if (fixed.length > 0) {
-    changelog += "## Fixed\n";
-    fixed.forEach((item) => (changelog += `- ${item}\n`));
-    changelog += "\n";
-  }
+`;
+  } else {
+    if (added.length > 0) {
+      changelog += "## Added\n";
+      added.forEach((item) => (changelog += `- ${item}\n`));
+      changelog += "\n";
+    }
 
-  if (security.length > 0) {
-    changelog += "## Security\n";
-    security.forEach((item) => (changelog += `- ${item}\n`));
-    changelog += "\n";
+    if (changed.length > 0) {
+      changelog += "## Changed\n";
+      changed.forEach((item) => (changelog += `- ${item}\n`));
+      changelog += "\n";
+    }
+
+    if (fixed.length > 0) {
+      changelog += "## Fixed\n";
+      fixed.forEach((item) => (changelog += `- ${item}\n`));
+      changelog += "\n";
+    }
+
+    if (security.length > 0) {
+      changelog += "## Security\n";
+      security.forEach((item) => (changelog += `- ${item}\n`));
+      changelog += "\n";
+    }
   }
 
   changelog += "## Downloads\n";

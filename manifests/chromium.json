@@ -2,9 +2,16 @@
   "manifest_version": 3,
   "name": "Cookie Sync (Chromium)",
   "description": "Sync encrypted selected-site cookies through Supabase.",
-  "version": "0.1.0",
-  "permissions": ["alarms", "cookies", "storage"],
-  "host_permissions": ["http://*/*", "https://*/*"],
+  "version": "0.1.1",
+  "permissions": [
+    "alarms",
+    "cookies",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
   "icons": {
     "16": "icon-16.png",
     "32": "icon-32.png",

@@ -1,6 +1,6 @@
 {
   "name": "selected-site-cookie-sync-extension",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Shared WebExtensions codebase for syncing encrypted selected-site cookies through Supabase.",

@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Cookie Sync (Gecko)",
   "description": "Sync encrypted selected-site cookies through Supabase.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "permissions": [
     "alarms",
     "cookies",
@@ -19,7 +19,9 @@
     "128": "icon-128.png"
   },
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
   },
   "browser_action": {
     "default_title": "Cookie Sync (Gecko Consumer)",
@@ -38,7 +40,9 @@
       "id": "selected-site-cookie-sync@example.local",
       "strict_min_version": "109.0",
       "data_collection_permissions": {
-        "required": ["none"],
+        "required": [
+          "none"
+        ],
         "optional": []
       }
     }

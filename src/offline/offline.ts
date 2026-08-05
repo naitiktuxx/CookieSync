@@ -27,6 +27,11 @@ const statusFooter = document.querySelector<HTMLElement>("#status-footer");
 const statusHeader = document.querySelector<HTMLElement>("#status-header");
 const themeToggleButton = document.querySelector<HTMLButtonElement>("#theme-toggle");
 
+let loadedSites: RemoteSiteOption[] = [];
+let selectedDomains = new Set<string>();
+let currentTheme: "dark" | "catppuccin" = "dark";
+let isExplicitlySaved = false;
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 function createSvgElement(
