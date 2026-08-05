@@ -557,7 +557,7 @@ async function loadSettings(): Promise<void> {
     const hasSyncId = Boolean(settings.syncId);
     const hasPassphrase = Boolean(settingsWithAuth.hasPassphrase || settings.syncPassphrase || passphraseInput?.value.trim());
     const isConfigured = hasSyncId && hasPassphrase;
-    isExplicitlySaved = Boolean(settings.rememberPassphrase && settings.syncPassphrase);
+    isExplicitlySaved = hasPassphrase;
 
     if (settingsSection && !isOffline) {
       if (isConfigured && isExplicitlySaved) {

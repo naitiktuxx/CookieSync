@@ -347,10 +347,9 @@ async function loadSettings(): Promise<void> {
       rememberPassphraseInput.checked = Boolean(settings.rememberPassphrase);
     }
 
-    isExplicitlySaved = Boolean(settings.rememberPassphrase && settings.syncPassphrase);
-
     const settingsWithAuth = settings as ModeSettingsView;
     const hasPassphrase = Boolean(settingsWithAuth.hasPassphrase || settings.syncPassphrase || passphraseInput?.value.trim());
+    isExplicitlySaved = hasPassphrase;
     updateSettingsBadge(hasPassphrase);
 
     if (settingsSection) {
