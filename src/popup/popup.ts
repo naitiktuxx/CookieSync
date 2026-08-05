@@ -218,7 +218,7 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
     return;
   }
 
-  const passphrase = passphraseInput?.value.trim() ?? "";
+  const passphrase = passphraseInput?.value ?? "";
   const supabaseUrl = supabaseUrlInput?.value.trim() ?? "";
   const supabaseAnonKey = supabaseAnonKeyInput?.value.trim() ?? "";
   const syncId = syncIdInput?.value.trim() ?? "";
@@ -228,6 +228,7 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
   try {
     await sendMessage({
       type: "save-settings",
+      settingsScope: "online",
       supabaseUrl,
       supabaseAnonKey,
       syncId,
@@ -267,19 +268,25 @@ modeOnlineButton?.addEventListener("click", () => {
   setMode("online");
   if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
   renderSites([]);
-  void sendMessage({ type: "save-settings", syncMode: "online" }).catch(() => {});
+  void sendMessage({ type: "save-settings", settingsScope: "global", syncMode: "online" })
+    .then(() => loadSettings())
+    .catch(() => {});
 });
 
 modeOfflineButton?.addEventListener("click", () => {
   setMode("offline");
   if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
-  void sendMessage({ type: "save-settings", syncMode: "offline" }).catch(() => undefined);
+  void sendMessage({ type: "save-settings", settingsScope: "global", syncMode: "offline" })
+    .then(() => loadSettings())
+    .catch(() => undefined);
 });
 
 onboardOfflineBtn?.addEventListener("click", () => {
   setMode("offline");
   if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
-  void sendMessage({ type: "save-settings", syncMode: "offline" }).catch(() => undefined);
+  void sendMessage({ type: "save-settings", settingsScope: "global", syncMode: "offline" })
+    .then(() => loadSettings())
+    .catch(() => undefined);
 });
 
 openOfflinePageButton?.addEventListener("click", () => {
@@ -290,7 +297,9 @@ onboardOnlineBtn?.addEventListener("click", () => {
   setMode("online");
   if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
   renderSites([]);
-  void sendMessage({ type: "save-settings", settingsScope: "global", syncMode: "online" }).catch(() => {});
+  void sendMessage({ type: "save-settings", settingsScope: "global", syncMode: "online" })
+    .then(() => loadSettings())
+    .catch(() => {});
   addLog("Switched to Online Mode.", "info");
 });
 
@@ -528,8 +537,8 @@ async function loadSettings(): Promise<void> {
     if (autoSyncEnabledInput) {
       autoSyncEnabledInput.checked = Boolean(settings.autoSyncEnabled);
     }
-    if (passphraseInput && settings.syncPassphrase) {
-      passphraseInput.value = settings.syncPassphrase;
+    if (passphraseInput) {
+      passphraseInput.value = settings.syncPassphrase ?? "";
     }
 
     setMode(settings.syncMode ?? "online");

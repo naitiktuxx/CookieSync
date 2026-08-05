@@ -11,7 +11,7 @@
     "build:gecko": "node scripts/build.mjs gecko",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "test": "esbuild src/shared/crypto.test.ts src/shared/domainAllowlist.test.ts src/shared/cookies.test.ts --bundle --format=esm --outdir=dist/tests --platform=node && node --test dist/tests/*.test.js"
+    "test": "esbuild src/shared/crypto.test.ts src/shared/domainAllowlist.test.ts src/shared/cookies.test.ts src/shared/syncEngine.test.ts --bundle --format=esm --outdir=dist/tests --platform=node && node --test dist/tests/*.test.js"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.287",

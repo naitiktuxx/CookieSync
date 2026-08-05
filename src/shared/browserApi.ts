@@ -2,13 +2,16 @@ type CallbackApi = typeof chrome;
 
 declare const browser: typeof chrome | undefined;
 
-const rawApi = (typeof chrome !== "undefined" ? chrome : typeof browser !== "undefined" ? browser : {}) as CallbackApi;
+function getApi(): CallbackApi {
+  return (typeof chrome !== "undefined" ? chrome : typeof browser !== "undefined" ? browser : {}) as CallbackApi;
+}
 
-function toPromise<T>(invoke: (done: (value: T) => void) => void): Promise<T> {
+function toPromise<T>(invoke: (api: CallbackApi, done: (value: T) => void) => void): Promise<T> {
   return new Promise((resolve, reject) => {
     try {
-      invoke((value) => {
-        const lastError = rawApi.runtime?.lastError;
+      const api = getApi();
+      invoke(api, (value) => {
+        const lastError = api.runtime?.lastError;
         if (lastError) {
           reject(new Error(lastError.message));
           return;
@@ -21,34 +24,39 @@ function toPromise<T>(invoke: (done: (value: T) => void) => void): Promise<T> {
   });
 }
 
-export const extensionApi = rawApi;
+export const extensionApi = new Proxy({} as CallbackApi, {
+  get(_target, prop: keyof CallbackApi) {
+    return getApi()[prop];
+  }
+});
 
 export async function getStorage<T extends Record<string, unknown>>(keys?: string[]): Promise<T> {
-  return toPromise<T>((done) => rawApi.storage.local.get(keys ?? null, done));
+  return toPromise<T>((api, done) => api.storage.local.get(keys ?? null, done));
 }
 
 export async function setStorage(values: Record<string, unknown>): Promise<void> {
-  await toPromise<void>((done) => rawApi.storage.local.set(values, done));
+  await toPromise<void>((api, done) => api.storage.local.set(values, done));
 }
 
 export async function getAllCookies(details: chrome.cookies.GetAllDetails = {}): Promise<chrome.cookies.Cookie[]> {
-  return toPromise<chrome.cookies.Cookie[]>((done) => rawApi.cookies.getAll(details, done));
+  return toPromise<chrome.cookies.Cookie[]>((api, done) => api.cookies.getAll(details, done));
 }
 
 export async function setCookie(details: chrome.cookies.SetDetails): Promise<chrome.cookies.Cookie | null> {
-  return toPromise<chrome.cookies.Cookie | null>((done) => rawApi.cookies.set(details, done));
+  return toPromise<chrome.cookies.Cookie | null>((api, done) => api.cookies.set(details, done));
 }
 
 export async function removeCookie(details: chrome.cookies.CookieDetails): Promise<chrome.cookies.CookieDetails | undefined> {
-  return toPromise<chrome.cookies.CookieDetails | undefined>((done) => rawApi.cookies.remove(details, done));
+  return toPromise<chrome.cookies.CookieDetails | undefined>((api, done) => api.cookies.remove(details, done));
 }
 
 const inMemorySessionStorage = new Map<string, unknown>();
 
 export async function getSessionStorage<T extends Record<string, unknown>>(keys?: string[]): Promise<T> {
-  if (rawApi.storage?.session) {
+  const api = getApi();
+  if (api.storage?.session) {
     try {
-      return await toPromise<T>((done) => rawApi.storage.session.get(keys ?? null, done));
+      return await toPromise<T>((apiRef, done) => apiRef.storage.session.get(keys ?? null, done));
     } catch {
       // Fallback to in-memory store
     }
@@ -73,9 +81,10 @@ export async function setSessionStorage(values: Record<string, unknown>): Promis
   for (const [k, v] of Object.entries(values)) {
     inMemorySessionStorage.set(k, v);
   }
-  if (rawApi.storage?.session) {
+  const api = getApi();
+  if (api.storage?.session) {
     try {
-      await toPromise<void>((done) => rawApi.storage.session.set(values, done));
+      await toPromise<void>((apiRef, done) => apiRef.storage.session.set(values, done));
     } catch {
       // Fallback to in-memory store
     }
@@ -86,9 +95,10 @@ export async function removeSessionStorage(keys: string[]): Promise<void> {
   for (const k of keys) {
     inMemorySessionStorage.delete(k);
   }
-  if (rawApi.storage?.session) {
+  const api = getApi();
+  if (api.storage?.session) {
     try {
-      await toPromise<void>((done) => rawApi.storage.session.remove(keys, done));
+      await toPromise<void>((apiRef, done) => apiRef.storage.session.remove(keys, done));
     } catch {
       // Fallback to in-memory store
     }

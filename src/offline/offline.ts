@@ -33,6 +33,7 @@ const COMPACT_ICON_SVG = `<svg class="expand-icon" width="14" height="14" viewBo
 let loadedSites: RemoteSiteOption[] = [];
 let selectedDomains = new Set<string>();
 let currentTheme: "dark" | "catppuccin" = "dark";
+let isExplicitlySaved = false;
 
 function updateExpandSitesButton(): void {
   if (!expandSitesButton) return;
@@ -62,8 +63,13 @@ function toggleTheme(): void {
 
 function updateSettingsBadge(hasPassphrase: boolean): void {
   if (!settingsStatusBadge) return;
+  const isRemembered = Boolean(rememberPassphraseInput?.checked);
   if (hasPassphrase) {
-    settingsStatusBadge.textContent = "Passphrase Saved ✓";
+    if (isRemembered && isExplicitlySaved) {
+      settingsStatusBadge.textContent = "Passphrase Saved ✓";
+    } else {
+      settingsStatusBadge.textContent = "Passphrase Set ✓";
+    }
     settingsStatusBadge.className = "badge-status configured";
   } else {
     settingsStatusBadge.textContent = "Passphrase Required";
@@ -90,7 +96,14 @@ function setupTargetUi(): void {
 }
 
 setupTargetUi();
+void sendMessage({ type: "register-offline-tab" }).catch(() => {});
 void loadSettings();
+
+const cleanupOfflineSession = () => {
+  void sendMessage({ type: "clear-offline-session" }).catch(() => {});
+};
+window.addEventListener("pagehide", cleanupOfflineSession);
+window.addEventListener("beforeunload", cleanupOfflineSession);
 
 settingsHeader?.addEventListener("click", () => {
   settingsSection?.classList.toggle("collapsed");
@@ -109,11 +122,13 @@ togglePassphraseButton?.addEventListener("click", () => {
 });
 
 saveButton?.addEventListener("click", () => {
+  isExplicitlySaved = true;
   void saveSettingsFromForm({ silent: false }).catch(() => undefined);
 });
 
 for (const input of [passphraseInput]) {
   input?.addEventListener("input", () => {
+    isExplicitlySaved = false;
     void saveSettingsFromForm({ silent: true }).catch(() => undefined);
   });
 }
@@ -125,12 +140,13 @@ rememberPassphraseInput?.addEventListener("change", () => {
 themeToggleButton?.addEventListener("click", toggleTheme);
 
 async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<void> {
-  const passphrase = passphraseInput?.value.trim() ?? "";
+  const passphrase = passphraseInput?.value ?? "";
   const rememberPassphrase = Boolean(rememberPassphraseInput?.checked);
 
   try {
     await sendMessage({
       type: "save-settings",
+      settingsScope: "offline",
       passphrase,
       rememberPassphrase,
       syncMode: "offline"
@@ -314,19 +330,22 @@ function addLog(message: string, level: "info" | "success" | "warn" | "error" = 
 
 async function loadSettings(): Promise<void> {
   try {
+    await sendMessage({ type: "clear-offline-session" }).catch(() => {});
     const settings = (await sendMessage({ type: "get-settings" })) as ModeSettingsView;
     setTheme(settings.themePreference ?? "dark");
 
     if (settings.syncMode !== "offline") {
-      await sendMessage({ type: "save-settings", syncMode: "offline" });
+      await sendMessage({ type: "save-settings", settingsScope: "global", syncMode: "offline" });
     }
 
-    if (passphraseInput && settings.syncPassphrase) {
-      passphraseInput.value = settings.syncPassphrase;
+    if (passphraseInput) {
+      passphraseInput.value = settings.syncPassphrase ?? "";
     }
     if (rememberPassphraseInput) {
       rememberPassphraseInput.checked = Boolean(settings.rememberPassphrase);
     }
+
+    isExplicitlySaved = Boolean(settings.rememberPassphrase && settings.syncPassphrase);
 
     const settingsWithAuth = settings as ModeSettingsView;
     const hasPassphrase = Boolean(settingsWithAuth.hasPassphrase || settings.syncPassphrase || passphraseInput?.value.trim());

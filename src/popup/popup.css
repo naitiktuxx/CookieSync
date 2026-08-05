@@ -1016,22 +1016,39 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
+  max-height: 240px;
   min-height: 0;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
 
-/* Hide all scrollbars globally */
-* {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
+.sites-list::-webkit-scrollbar,
+.settings-body::-webkit-scrollbar,
+.status-console::-webkit-scrollbar {
+  display: block !important;
+  width: 6px !important;
 }
 
-*::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
+.sites-list::-webkit-scrollbar-track,
+.settings-body::-webkit-scrollbar-track,
+.status-console::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+}
+
+.sites-list::-webkit-scrollbar-thumb,
+.settings-body::-webkit-scrollbar-thumb,
+.status-console::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+}
+
+.sites-list::-webkit-scrollbar-thumb:hover,
+.settings-body::-webkit-scrollbar-thumb:hover,
+.status-console::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.45);
 }
 
 /* Site Option Item */
@@ -1183,8 +1200,17 @@ body[data-target="chromium"] #settings-section:not(.collapsed) .settings-body {
 }
 
 /* Gecko Target Specific Layout & Button Styling */
+body[data-target="gecko"] #settings-section.collapsed ~ #site-picker {
+  height: 284px;
+}
+
+body[data-target="gecko"] #settings-section:not(.collapsed) {
+  height: 326px;
+}
+
 body[data-target="gecko"] #settings-section:not(.collapsed) .settings-body {
-  max-height: 284px !important;
+  max-height: 274px !important;
+  overflow-y: auto;
 }
 
 body[data-target="gecko"] #last-synced-box {

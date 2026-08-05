@@ -93,7 +93,7 @@ export class CookieSyncEngine {
 
   async saveConfiguration(input: SaveConfigurationInput): Promise<void> {
     const existing = await this.loadSettings();
-    const scope = input.settingsScope ?? inferScopeFromInput(input);
+    const scope = input.settingsScope ?? inferScopeFromInput(input, existing.syncMode);
     let nextSettings: StoredSettings = { ...existing };
 
     if (input.syncMode !== undefined && input.syncMode !== existing.syncMode) {
@@ -119,7 +119,11 @@ export class CookieSyncEngine {
       : (this.sessionPassphrases[scope] ?? bucket.syncPassphrase);
 
     if (passphraseProvided) {
-      this.sessionPassphrases[scope] = input.syncPassphrase;
+      if (input.syncPassphrase) {
+        this.sessionPassphrases[scope] = input.syncPassphrase;
+      } else {
+        delete this.sessionPassphrases[scope];
+      }
     }
 
     const rememberPassphrase = input.rememberPassphrase !== undefined
@@ -127,10 +131,10 @@ export class CookieSyncEngine {
       : Boolean(bucket.rememberPassphrase);
 
     bucket.rememberPassphrase = rememberPassphrase;
-    bucket.syncPassphrase = rememberPassphrase ? passphraseToUse : undefined;
+    bucket.syncPassphrase = rememberPassphrase && passphraseToUse ? passphraseToUse : undefined;
 
     const sessionKey = SESSION_PASSPHRASE_KEYS[scope];
-    if (rememberPassphrase && passphraseToUse) {
+    if (passphraseToUse) {
       await setSessionStorage({ [sessionKey]: passphraseToUse });
     } else {
       await removeSessionStorage([sessionKey]);
@@ -222,6 +226,27 @@ export class CookieSyncEngine {
       this.offlineSnapshot = offlineSnapshot;
     }
     return this.offlineSnapshot;
+  }
+
+  async clearOfflineSession(): Promise<void> {
+    this.offlineSnapshot = undefined;
+    await setStorage({ offlineSnapshot: undefined });
+
+    const settings = await this.loadSettings();
+    const offline = settings.offline ?? defaultOfflineSettings();
+    await this.saveSettings({
+      ...settings,
+      offline: {
+        ...offline,
+        importedDomains: [],
+        lastSyncedAt: undefined
+      }
+    });
+
+    if (!offline.rememberPassphrase) {
+      delete this.sessionPassphrases.offline;
+      await removeSessionStorage([SESSION_PASSPHRASE_KEYS.offline]);
+    }
   }
 
   async getOfflineSites(): Promise<RemoteSiteOption[]> {
@@ -695,7 +720,11 @@ interface RequiredSettings {
   passphrase: string;
 }
 
-function inferScopeFromInput(input: SaveConfigurationInput): SettingsScope | "global" {
+function inferScopeFromInput(input: SaveConfigurationInput, currentSyncMode?: SettingsScope): SettingsScope | "global" {
+  if (input.settingsScope) {
+    return input.settingsScope;
+  }
+
   if (input.syncMode !== undefined || input.themePreference !== undefined) {
     const hasModeFields = input.syncPassphrase !== undefined
       || input.rememberPassphrase !== undefined
@@ -712,7 +741,7 @@ function inferScopeFromInput(input: SaveConfigurationInput): SettingsScope | "gl
     return "online";
   }
 
-  return "offline";
+  return currentSyncMode ?? "online";
 }
 
 function defaultOnlineSettings(): OnlineModeSettings {

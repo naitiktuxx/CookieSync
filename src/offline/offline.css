@@ -53,8 +53,52 @@ body {
   box-shadow: 0 0 6px #06b6d4;
 }
 
+.sites-list {
+  max-height: 270px;
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.sites-list::-webkit-scrollbar {
+  display: block !important;
+  width: 6px !important;
+}
+
+.sites-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+}
+
+.sites-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+}
+
+.sites-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
 body.sites-expanded .sites-list {
-  max-height: 480px !important;
+  max-height: 540px !important;
+}
+
+/* Equalized total height so action buttons stay at exact same Y-position whether settings is collapsed or expanded */
+#settings-section.collapsed ~ #site-picker {
+  height: 338px;
+  margin-bottom: 12px;
+}
+
+#settings-section:not(.collapsed) {
+  height: 380px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+#settings-section:not(.collapsed) .settings-body {
+  max-height: 330px !important;
+  overflow-y: auto;
 }
 
 body[data-target="chromium"] #gecko-actions-row,

@@ -21,17 +21,38 @@ extensionApi.cookies.onChanged.addListener((changeInfo) => {
   void engine.recordCookieChange(changeInfo).catch((error) => console.error("Cookie change tracking failed", error));
 });
 
-extensionApi.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
-  void handleMessage(message)
+let registeredOfflineTabId: number | null = null;
+
+extensionApi.tabs?.onRemoved?.addListener((tabId) => {
+  if (tabId === registeredOfflineTabId) {
+    registeredOfflineTabId = null;
+    void engine.clearOfflineSession().catch((error) => console.error("Failed to clear offline session on tab close:", error));
+  }
+});
+
+extensionApi.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
+  void handleMessage(message, sender)
     .then((result) => sendResponse({ ok: true, result }))
     .catch((error) => sendResponse({ ok: false, error: String(error?.message ?? error) }));
 
   return true;
 });
 
-async function handleMessage(message: unknown): Promise<unknown> {
+async function handleMessage(message: unknown, sender?: chrome.runtime.MessageSender): Promise<unknown> {
   if (!isMessage(message)) {
     throw new Error("Unknown message.");
+  }
+
+  if (message.type === "register-offline-tab") {
+    if (sender?.tab?.id !== undefined) {
+      registeredOfflineTabId = sender.tab.id;
+    }
+    return { registered: true };
+  }
+
+  if (message.type === "clear-offline-session") {
+    await engine.clearOfflineSession();
+    return { cleared: true };
   }
 
   if (message.type === "set-passphrase") {
@@ -105,6 +126,8 @@ function isMessage(
   message: unknown
 ): message is
   | { type: "sync"; direction: SyncDirection }
+  | { type: "register-offline-tab" }
+  | { type: "clear-offline-session" }
   | { type: "set-passphrase"; passphrase: string; settingsScope?: "online" | "offline" }
   | { type: "get-settings"; settingsScope?: "online" | "offline" }
   | { type: "save-settings"; settingsScope?: "online" | "offline" | "global"; passphrase?: string; supabaseUrl?: string; supabaseAnonKey?: string; syncId?: string; rememberPassphrase?: boolean; autoSyncEnabled?: boolean; themePreference?: "dark" | "catppuccin"; syncMode?: "online" | "offline" }
@@ -139,6 +162,8 @@ function isMessage(
     domain?: unknown;
   };
   return (
+    candidate.type === "register-offline-tab" ||
+    candidate.type === "clear-offline-session" ||
     (candidate.type === "sync" && ["push", "pull", "sync"].includes(candidate.direction ?? "")) ||
     (candidate.type === "set-passphrase" && typeof candidate.passphrase === "string") ||
     candidate.type === "get-settings" ||
