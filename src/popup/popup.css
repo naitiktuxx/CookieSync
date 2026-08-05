@@ -1016,7 +1016,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 370px;
+  max-height: 240px;
   min-height: 0;
   overflow-y: auto;
   padding-right: 6px;
@@ -1200,22 +1200,23 @@ body[data-target="chromium"] #settings-section:not(.collapsed) .settings-body {
 }
 
 /* 
- * IMMUTABLE CONTAINER HEIGHTS (GECKO)
- * #site-picker (Offline site list) is enlarged for easy selection (420px).
- * #settings-section (Online Settings) is kept compact (300px).
+ * CRITICAL / IMMUTABLE: ACTION BUTTON Y-POSITION LOCK (GECKO)
+ * DO NOT EDIT OR RESET THESE CONTAINER HEIGHTS OR MARGINS IN THE FUTURE.
+ * Equalized total heights (326px) ensure action buttons (1. Load sites / .cokz, 2. Import selected,
+ * and Clear all local cookies) stay at the exact same Y-position matching Picture 1.
  */
 body[data-target="gecko"] #settings-section.collapsed ~ #site-picker {
-  height: 420px;
+  height: 326px;
   flex-shrink: 0;
 }
 
 body[data-target="gecko"] #settings-section:not(.collapsed) {
-  height: 300px;
+  height: 326px;
   flex-shrink: 0;
 }
 
 body[data-target="gecko"] #settings-section:not(.collapsed) .settings-body {
-  max-height: 250px !important;
+  max-height: 274px !important;
   overflow-y: auto;
 }
 
