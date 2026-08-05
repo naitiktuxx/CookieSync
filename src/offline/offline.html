@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CookieSync — Offline Mode</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./popup.css" />
+    <link rel="stylesheet" href="./offline.css" />
+  </head>
+  <body data-mode="offline">
+    <main class="offline-main">
+      <header class="app-header offline-header">
+        <div class="brand-group">
+          <div class="target-icon-wrap" id="target-badge-icon"></div>
+          <div>
+            <h1 id="title">CookieSync</h1>
+            <p class="offline-subtitle">Offline Mode — encrypted .cokz file sync</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <span class="offline-badge">
+            <span class="badge-dot"></span>
+            Offline
+          </span>
+          <button id="theme-toggle" class="theme-toggle-btn" type="button" title="Toggle Theme" aria-label="Toggle Theme">
+            <svg class="theme-icon icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            <svg class="theme-icon icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <input type="file" id="cokz-file-input" accept=".cokz,application/json" hidden />
+
+      <section class="card settings-card collapsed" id="settings-section">
+        <div class="card-header clickable" id="settings-header" role="button" tabindex="0">
+          <span class="card-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Offline Settings
+          </span>
+          <div class="card-header-right">
+            <span class="badge-status" id="settings-status-badge">Setup Required</span>
+            <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+        <div class="settings-body" id="settings-body">
+          <div class="settings-grid">
+            <label class="field-group">
+              <span class="field-label">Sync Passphrase</span>
+              <div class="input-wrap has-action">
+                <input id="passphrase" type="password" autocomplete="new-password" placeholder="Enter encryption passphrase..." />
+                <button type="button" class="btn-toggle-password" id="toggle-passphrase" title="Toggle password visibility" tabindex="-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+            </label>
+
+            <div class="checkboxes-save-row">
+              <div class="checkboxes-wrap">
+                <label class="check-row">
+                  <input id="remember-passphrase" type="checkbox" />
+                  <span class="check-custom"></span>
+                  <span class="check-text">Remember passphrase on this device</span>
+                </label>
+              </div>
+              <button id="save-settings" class="btn btn-primary btn-save-side" type="button">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                <span>Save</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="site-picker" class="card picker-card">
+        <div class="picker-top-bar">
+          <span class="picker-subtle-title">Sites to import</span>
+          <div class="picker-actions-right">
+            <label id="select-all-wrap" class="check-button" hidden>
+              <input id="select-all-sites" type="checkbox" />
+              <span class="check-custom"></span>
+              <span>Select all</span>
+            </label>
+            <button id="expand-sites" class="btn btn-ghost btn-icon-only" type="button" title="Expand list" aria-label="Expand list" hidden>
+              <svg class="expand-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <polyline points="9 21 3 21 3 15"></polyline>
+                <line x1="21" y1="3" x2="14" y2="10"></line>
+                <line x1="3" y1="21" x2="10" y2="14"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="search-wrap">
+          <input id="site-search" type="search" placeholder="Search domains..." hidden />
+        </div>
+        <div id="sites" class="sites-list"></div>
+      </section>
+
+      <section class="actions">
+        <div class="steps-row" id="chromium-actions-row">
+          <button id="export-cokz-now" class="btn btn-hero btn-step" type="button" hidden>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Export cookies (.cokz)</span>
+          </button>
+        </div>
+
+        <div class="steps-row" id="gecko-actions-row">
+          <button id="load-cokz-file" class="btn btn-secondary btn-step" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+            <span class="btn-text">1. Load .cokz file</span>
+          </button>
+
+          <button id="import-now" class="btn btn-hero btn-step" type="button" disabled>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              <polyline points="9 11 12 14 22 4"></polyline>
+            </svg>
+            <span class="btn-text">2. Import selected</span>
+          </button>
+        </div>
+
+        <button id="clear-all-cookies" class="btn btn-secondary btn-full" type="button" hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span>Clear all local cookies</span>
+        </button>
+      </section>
+
+      <footer class="status-footer" id="status-footer">
+        <div class="status-header clickable" id="status-header" role="button" tabindex="0">
+          <div class="status-title-wrap">
+            <span class="status-title">Activity Log</span>
+            <svg class="chevron-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          <div id="last-synced-box" class="last-synced-box">
+            <span class="last-synced-label">Last synced:</span>
+            <span id="last-synced-text" class="last-synced-text">Never</span>
+          </div>
+        </div>
+        <div id="status" role="status" class="status-console"></div>
+      </footer>
+    </main>
+    <script src="./offline.js"></script>
+  </body>
+</html>

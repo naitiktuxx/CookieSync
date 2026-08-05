@@ -1,0 +1,88 @@
+body {
+  width: 100%;
+  height: 100vh;
+  max-height: none;
+  overflow: auto;
+}
+
+.offline-main {
+  width: 100%;
+  max-width: 720px;
+  min-height: 100vh;
+  height: auto;
+  max-height: none;
+  margin: 0 auto;
+  padding: 24px 20px 32px;
+  overflow: visible;
+}
+
+.offline-header {
+  margin-bottom: 4px;
+}
+
+.offline-header .brand-group {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.offline-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.offline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #06b6d4;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+.offline-badge .badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #06b6d4;
+  box-shadow: 0 0 6px #06b6d4;
+}
+
+body.sites-expanded .sites-list {
+  max-height: 480px !important;
+}
+
+body[data-target="chromium"] #gecko-actions-row,
+body[data-target="chromium"] #clear-all-cookies {
+  display: none !important;
+}
+
+body[data-target="chromium"] #export-cokz-now {
+  display: inline-flex !important;
+  width: 100%;
+}
+
+body[data-target="gecko"] #chromium-actions-row {
+  display: none !important;
+}
+
+body[data-target="gecko"] #clear-all-cookies {
+  display: inline-flex !important;
+}
+
+body[data-target="gecko"] #gecko-actions-row {
+  display: flex !important;
+}
+
+body[data-target="gecko"] #site-picker {
+  display: block !important;
+}
+
+.status-footer.expanded .status-console {
+  max-height: 200px !important;
+}

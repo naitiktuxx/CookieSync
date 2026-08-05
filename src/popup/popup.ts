@@ -1,6 +1,6 @@
 import { extensionApi } from "../shared/browserApi";
 import { DEFAULT_SUPABASE_ANON_KEY, DEFAULT_SUPABASE_URL } from "../shared/defaultConfig";
-import type { BrowserTarget, RemoteSiteOption, StoredSettings, SyncDirection } from "../shared/types";
+import type { BrowserTarget, ModeSettingsView, RemoteSiteOption, SyncDirection } from "../shared/types";
 
 declare const __BROWSER_TARGET__: BrowserTarget;
 
@@ -54,9 +54,9 @@ const modeOfflineButton = document.querySelector<HTMLButtonElement>("#mode-offli
 const modeOnboardingOverlay = document.querySelector<HTMLDivElement>("#mode-onboarding-overlay");
 const onboardOfflineBtn = document.querySelector<HTMLButtonElement>("#onboard-offline-btn");
 const onboardOnlineBtn = document.querySelector<HTMLButtonElement>("#onboard-online-btn");
-const exportCokzButton = document.querySelector<HTMLButtonElement>("#export-cokz-now");
-const loadCokzFileButton = document.querySelector<HTMLButtonElement>("#load-cokz-file");
-const cokzFileInput = document.querySelector<HTMLInputElement>("#cokz-file-input");
+const offlinePanel = document.querySelector<HTMLElement>("#offline-panel");
+const onlinePanel = document.querySelector<HTMLElement>("#online-panel");
+const openOfflinePageButton = document.querySelector<HTMLButtonElement>("#open-offline-page");
 
 let loadedSites: RemoteSiteOption[] = [];
 let selectedDomains = new Set<string>();
@@ -73,23 +73,41 @@ function setMode(mode: "online" | "offline"): void {
     modeOfflineButton.classList.toggle("active", mode === "offline");
   }
 
-  const passphrase = passphraseInput?.value.trim() ?? "";
-  const isOffline = mode === "offline";
-  const isConfigured = isOffline
-    ? Boolean(passphrase)
-    : Boolean(supabaseUrlInput?.value.trim()) && Boolean(supabaseAnonKeyInput?.value.trim()) && Boolean(syncIdInput?.value.trim()) && Boolean(passphrase);
+  if (mode === "online") {
+    const supabaseUrl = supabaseUrlInput?.value.trim() ?? "";
+    const supabaseAnonKey = supabaseAnonKeyInput?.value.trim() ?? "";
+    const syncId = syncIdInput?.value.trim() ?? "";
+    const passphrase = passphraseInput?.value.trim() ?? "";
+    const isConfigured = Boolean(supabaseUrl) && Boolean(supabaseAnonKey) && Boolean(syncId) && Boolean(passphrase);
 
-  if (settingsStatusBadge) {
-    if (isConfigured) {
-      settingsStatusBadge.textContent = isOffline ? "Passphrase Saved ✓" : "Configured ✓";
-      settingsStatusBadge.className = "badge-status configured";
-    } else {
-      settingsStatusBadge.textContent = isOffline ? "Passphrase Required" : "Setup Required";
-      settingsStatusBadge.className = "badge-status setup";
+    if (settingsStatusBadge) {
+      if (isConfigured) {
+        settingsStatusBadge.textContent = "Configured ✓";
+        settingsStatusBadge.className = "badge-status configured";
+      } else {
+        settingsStatusBadge.textContent = "Setup Required";
+        settingsStatusBadge.className = "badge-status setup";
+      }
     }
   }
 
+  updateModePanels();
   setupTargetUi();
+}
+
+function updateModePanels(): void {
+  const isOffline = currentMode === "offline";
+  if (offlinePanel) {
+    offlinePanel.hidden = !isOffline;
+  }
+  if (onlinePanel) {
+    onlinePanel.hidden = isOffline;
+  }
+}
+
+function openOfflinePage(): void {
+  const url = extensionApi.runtime.getURL("offline.html");
+  window.open(url, "_blank");
 }
 
 function setTheme(theme: "dark" | "catppuccin"): void {
@@ -110,7 +128,7 @@ function setTheme(theme: "dark" | "catppuccin"): void {
 function toggleTheme(): void {
   const newTheme = currentTheme === "dark" ? "catppuccin" : "dark";
   setTheme(newTheme);
-  void sendMessage({ type: "save-settings", themePreference: newTheme })
+  void sendMessage({ type: "save-settings", settingsScope: "global", themePreference: newTheme })
     .catch((error) => console.warn("Failed to save theme preference:", error));
 }
 
@@ -196,6 +214,10 @@ autoSyncEnabledInput?.addEventListener("change", () => {
 });
 
 async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<void> {
+  if (currentMode !== "online") {
+    return;
+  }
+
   const passphrase = passphraseInput?.value.trim() ?? "";
   const supabaseUrl = supabaseUrlInput?.value.trim() ?? "";
   const supabaseAnonKey = supabaseAnonKeyInput?.value.trim() ?? "";
@@ -212,25 +234,22 @@ async function saveSettingsFromForm({ silent }: { silent: boolean }): Promise<vo
       passphrase,
       rememberPassphrase,
       autoSyncEnabled,
-      syncMode: currentMode
+      syncMode: "online"
     });
-    
-    const isOffline = currentMode === "offline";
-    const isFullyConfigured = isOffline
-      ? Boolean(passphrase)
-      : Boolean(supabaseUrl) && Boolean(supabaseAnonKey) && Boolean(syncId) && Boolean(passphrase);
+
+    const isFullyConfigured = Boolean(supabaseUrl) && Boolean(supabaseAnonKey) && Boolean(syncId) && Boolean(passphrase);
 
     if (settingsStatusBadge) {
       if (isFullyConfigured) {
-        settingsStatusBadge.textContent = isOffline ? "Passphrase Saved ✓" : "Configured ✓";
+        settingsStatusBadge.textContent = "Configured ✓";
         settingsStatusBadge.className = "badge-status configured";
       } else {
-        settingsStatusBadge.textContent = isOffline ? "Passphrase Required" : "Setup Required";
+        settingsStatusBadge.textContent = "Setup Required";
         settingsStatusBadge.className = "badge-status setup";
       }
     }
     if (!silent) {
-      addLog(isFullyConfigured ? (rememberPassphrase ? "Settings saved with passphrase." : "Settings saved without passphrase.") : "Partial settings saved.", "success");
+      addLog(isFullyConfigured ? (rememberPassphrase ? "Online settings saved with passphrase." : "Online settings saved.") : "Partial online settings saved.", "success");
       if (isFullyConfigured) {
         settingsSection?.classList.add("collapsed");
       }
@@ -254,92 +273,25 @@ modeOnlineButton?.addEventListener("click", () => {
 modeOfflineButton?.addEventListener("click", () => {
   setMode("offline");
   if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
-  void saveSettingsFromForm({ silent: true })
-    .then(() => sendMessage({ type: "save-settings", syncMode: "offline" }))
-    .then(() => sendMessage({ type: "get-offline-sites" }))
-    .then((response) => renderSites(Array.isArray(response) ? (response as RemoteSiteOption[]) : []))
-    .catch(() => renderSites([]));
+  void sendMessage({ type: "save-settings", syncMode: "offline" }).catch(() => undefined);
 });
 
 onboardOfflineBtn?.addEventListener("click", () => {
   setMode("offline");
   if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
-  void saveSettingsFromForm({ silent: true })
-    .then(() => sendMessage({ type: "save-settings", syncMode: "offline" }))
-    .then(() => sendMessage({ type: "get-offline-sites" }))
-    .then((response) => renderSites(Array.isArray(response) ? (response as RemoteSiteOption[]) : []))
-    .catch(() => renderSites([]));
-  addLog("Switched to Offline Mode.", "info");
+  void sendMessage({ type: "save-settings", syncMode: "offline" }).catch(() => undefined);
+});
+
+openOfflinePageButton?.addEventListener("click", () => {
+  openOfflinePage();
 });
 
 onboardOnlineBtn?.addEventListener("click", () => {
   setMode("online");
   if (modeOnboardingOverlay) modeOnboardingOverlay.hidden = true;
   renderSites([]);
-  void sendMessage({ type: "save-settings", syncMode: "online" }).catch(() => {});
+  void sendMessage({ type: "save-settings", settingsScope: "global", syncMode: "online" }).catch(() => {});
   addLog("Switched to Online Mode.", "info");
-});
-
-exportCokzButton?.addEventListener("click", () => {
-  addLog("Exporting encrypted .cokz file...");
-  void saveSettingsFromForm({ silent: true })
-    .then(() => sendMessage({ type: "export-offline-cokz" }))
-    .then((response) => {
-      const res = response as { filename: string; content: string };
-      const blob = new Blob([res.content], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = res.filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      addLog(`Exported encrypted file: ${res.filename}`, "success");
-    })
-    .catch((error) => addLog(String(error.message ?? error), "error"));
-});
-
-loadCokzFileButton?.addEventListener("click", () => {
-  const passphrase = passphraseInput?.value.trim();
-  if (!passphrase) {
-    addLog("Enter your Sync Passphrase in Settings first.", "error");
-    settingsSection?.classList.remove("collapsed");
-    passphraseInput?.focus();
-    return;
-  }
-  cokzFileInput?.click();
-});
-
-cokzFileInput?.addEventListener("change", () => {
-  const file = cokzFileInput.files?.[0];
-  if (!file) return;
-
-  addLog(`Reading ${file.name}...`);
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const fileContent = e.target?.result as string;
-    if (!fileContent) {
-      addLog("Failed to read file.", "error");
-      return;
-    }
-
-    void saveSettingsFromForm({ silent: true })
-      .then(() => sendMessage({ type: "parse-offline-cokz", fileContent }))
-      .then((response) => {
-        const res = response as { sites: RemoteSiteOption[] };
-        if (!res.sites || res.sites.length === 0) {
-          addLog("No active cookies found in this .cokz file.", "warn");
-          renderSites([]);
-          return;
-        }
-        renderSites(res.sites);
-        addLog(`Loaded ${res.sites.length} site(s) from .cokz file.`, "success");
-      })
-      .catch((error) => addLog(String(error.message ?? error), "error"));
-  };
-  reader.readAsText(file);
-  cokzFileInput.value = "";
 });
 
 copySyncIdButton?.addEventListener("click", () => {
@@ -449,26 +401,6 @@ importButton?.addEventListener("click", () => {
     return;
   }
 
-  if (currentMode === "offline") {
-    addLog(`Importing ${selectedDomains.length} site(s) from .cokz file...`);
-    void saveSettingsFromForm({ silent: true })
-      .then(() => sendMessage({ type: "import-offline-domains", domains: selectedDomains }))
-      .then((response) => {
-        const res = response as { updatedAt?: number };
-        addLog(formatResult(response), "success");
-        updateImportVisibility();
-        updateLastSyncedDisplay(res?.updatedAt ?? Date.now());
-        return sendMessage({ type: "get-offline-sites" });
-      })
-      .then((offlineSites) => {
-        if (Array.isArray(offlineSites) && offlineSites.length > 0) {
-          renderSites(offlineSites as RemoteSiteOption[]);
-        }
-      })
-      .catch((error) => addLog(String(error.message ?? error), "error"));
-    return;
-  }
-
   addLog(`Importing ${selectedDomains.length} site(s)...`);
   void saveSettingsFromForm({ silent: true })
     .then(() => sendMessage({ type: "import-domains", domains: selectedDomains }))
@@ -548,9 +480,6 @@ function formatResult(response: unknown): string {
 }
 
 function addLog(message: string, level: "info" | "success" | "warn" | "error" = "info"): void {
-  if (level === "error" || level === "warn") {
-    document.body.classList.add("log-expanded");
-  }
   if (status) {
     const row = document.createElement("div");
     row.className = `log-line ${level}`;
@@ -571,7 +500,7 @@ function addLog(message: string, level: "info" | "success" | "warn" | "error" = 
 
 async function loadSettings(): Promise<void> {
   try {
-    const settings = (await sendMessage({ type: "get-settings" })) as StoredSettings;
+    const settings = (await sendMessage({ type: "get-settings" })) as ModeSettingsView;
     setTheme(settings.themePreference ?? "dark");
     if (settings.syncMode) {
       setMode(settings.syncMode);
@@ -609,38 +538,28 @@ async function loadSettings(): Promise<void> {
     }
 
     const isOffline = (settings.syncMode ?? "online") === "offline";
-    const settingsWithAuth = settings as StoredSettings & { hasPassphrase?: boolean };
+    const settingsWithAuth = settings as ModeSettingsView;
     const hasSyncId = Boolean(settings.syncId);
     const hasPassphrase = Boolean(settingsWithAuth.hasPassphrase || settings.syncPassphrase || passphraseInput?.value.trim());
-    const isConfigured = isOffline ? hasPassphrase : (hasSyncId && hasPassphrase);
+    const isConfigured = hasSyncId && hasPassphrase;
 
-    if (settingsSection) {
+    if (settingsSection && !isOffline) {
       if (isConfigured) {
         settingsSection.classList.add("collapsed");
         if (settingsStatusBadge) {
-          settingsStatusBadge.textContent = isOffline ? "Passphrase Saved ✓" : "Configured ✓";
+          settingsStatusBadge.textContent = "Configured ✓";
           settingsStatusBadge.className = "badge-status configured";
         }
       } else {
-        settingsSection.classList.remove("collapsed");
         if (settingsStatusBadge) {
-          settingsStatusBadge.textContent = isOffline ? "Passphrase Required" : "Setup Required";
+          settingsStatusBadge.textContent = "Setup Required";
           settingsStatusBadge.className = "badge-status setup";
         }
       }
     }
 
     updateLastSyncedDisplay(settings.lastSyncedAt);
-
-    if (isOffline) {
-      try {
-        const response = await sendMessage({ type: "get-offline-sites" });
-        const sites = response as RemoteSiteOption[];
-        renderSites(Array.isArray(sites) ? sites : []);
-      } catch {
-        renderSites([]);
-      }
-    }
+    updateModePanels();
   } catch (error) {
     addLog(String(error instanceof Error ? error.message : error), "error");
   }
@@ -675,11 +594,11 @@ function setupTargetUi(): void {
   }
 
   if (importButton) {
-    importButton.hidden = __BROWSER_TARGET__ !== "gecko" && currentMode !== "offline";
+    importButton.hidden = __BROWSER_TARGET__ !== "gecko";
   }
 
   if (clearAllCookiesButton) {
-    clearAllCookiesButton.hidden = __BROWSER_TARGET__ !== "gecko" && currentMode !== "offline";
+    clearAllCookiesButton.hidden = __BROWSER_TARGET__ !== "gecko";
   }
 
   if (saveButton) {
@@ -687,8 +606,10 @@ function setupTargetUi(): void {
   }
 
   if (sitePicker) {
-    sitePicker.hidden = __BROWSER_TARGET__ !== "gecko" && currentMode !== "offline";
+    sitePicker.hidden = __BROWSER_TARGET__ !== "gecko";
   }
+
+  updateModePanels();
 
   if (targetBadgeIcon) {
     targetBadgeIcon.innerHTML = `<img src="icon.png" width="22" height="22" style="object-fit: contain; display: block;" alt="Cookie Sync" />`;
@@ -735,9 +656,7 @@ function renderVisibleSites(): void {
   }
 
   if (!hasLoadedSites) {
-    sitesContainer.textContent = currentMode === "offline"
-      ? "No .cokz file loaded yet. Click '1. Load .cokz file' below to select your encrypted file."
-      : "There isn't any server data for this Sync ID yet.";
+    sitesContainer.textContent = "There isn't any server data for this Sync ID yet.";
     updateImportVisibility();
     return;
   }

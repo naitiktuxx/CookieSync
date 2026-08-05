@@ -36,7 +36,7 @@
                 </svg>
               </div>
               <h3>Offline Mode</h3>
-              <p>Export and import encrypted <code>.cokz</code> files locally. No server or network required.</p>
+              <p>Export and import encrypted <code>.cokz</code> files via a full-page interface. No server or network required.</p>
             </button>
 
             <button type="button" class="mode-card-option" id="onboard-online-btn">
@@ -70,6 +70,7 @@
               <span>Online</span>
             </button>
             <button type="button" class="pill-option" id="mode-offline" data-mode="offline" title="Offline Mode (Local .cokz Encrypted File)">
+              <span class="status-dot offline-dot"></span>
               <span>Offline</span>
             </button>
           </div>
@@ -100,17 +101,73 @@
         </div>
       </header>
 
-      <input type="file" id="cokz-file-input" accept=".cokz,application/json" hidden />
+      <!-- Offline mode: workspace hub launcher -->
+      <section id="offline-panel" class="offline-panel" hidden>
+        <div class="offline-hub-card">
+          <div class="offline-hub-header">
+            <div class="offline-hub-icon-wrap">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+              </svg>
+            </div>
+            <div class="offline-hub-title-group">
+              <h2>Offline Workspace</h2>
+              <span class="offline-badge-pill">
+                <span class="badge-dot"></span>
+                Local Sync Active
+              </span>
+            </div>
+          </div>
 
-      <!-- Settings Section (Collapsible) -->
-      <section class="card settings-card" id="settings-section">
+          <div class="offline-features-grid">
+            <div class="offline-feature-item">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span>AES-256 GCM</span>
+            </div>
+            <div class="offline-feature-item">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                <polyline points="13 2 13 9 20 9"></polyline>
+              </svg>
+              <span>.cokz Snapshot</span>
+            </div>
+            <div class="offline-feature-item">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>Zero Network</span>
+            </div>
+          </div>
+
+          <button id="open-offline-page" class="btn btn-hero btn-full offline-cta-btn" type="button">
+            <div class="btn-content-wrap">
+              <span class="btn-main-title">Open Offline Workspace</span>
+              <span class="btn-subtitle">Export & import .cokz encrypted files</span>
+            </div>
+            <svg class="btn-arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M5 12h14"></path>
+              <path d="M12 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- Online mode: full popup UI -->
+      <div id="online-panel">
+      <section class="card settings-card collapsed" id="settings-section">
         <div class="card-header clickable" id="settings-header" role="button" tabindex="0" title="Click to toggle settings panel">
           <span class="card-title">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
-            Settings & Credentials
+            Online Settings
           </span>
           <div class="card-header-right">
             <span class="badge-status" id="settings-status-badge">Setup</span>
@@ -151,7 +208,7 @@
               </div>
             </label>
 
-            <label class="field-group">
+            <label class="field-group online-only-setting">
               <span class="field-label">Sync Passphrase</span>
               <div class="input-wrap has-action">
                 <input id="passphrase" type="password" autocomplete="new-password" placeholder="Enter encryption passphrase..." />
@@ -182,7 +239,7 @@
               </label>
             </div>
 
-            <div class="checkboxes-save-row">
+            <div class="checkboxes-save-row online-only-setting">
               <div class="checkboxes-wrap">
                 <label class="check-row">
                   <input id="remember-passphrase" type="checkbox" />
@@ -191,7 +248,7 @@
                 </label>
               </div>
 
-              <button id="save-settings" class="btn btn-primary btn-save-side" type="button" title="Save Configuration">
+              <button id="save-settings" class="btn btn-primary btn-save-side" type="button" title="Save online configuration">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                   <polyline points="17 21 17 13 7 13 7 21"></polyline>
@@ -253,14 +310,6 @@
             <span>Upload cookies now</span>
           </button>
 
-          <button id="export-cokz-now" class="btn btn-hero btn-step" type="button" hidden>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Export cookies (.cokz)</span>
-          </button>
         </div>
 
         <!-- Gecko 2-Step Row: Load & Import -->
@@ -272,16 +321,6 @@
               <path d="m8 17 4 4 4-4"></path>
             </svg>
             <span class="btn-text">1. Load sites</span>
-          </button>
-
-          <button id="load-cokz-file" class="btn btn-secondary btn-step" type="button" hidden>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="12" y1="18" x2="12" y2="12"></line>
-              <line x1="9" y1="15" x2="15" y2="15"></line>
-            </svg>
-            <span class="btn-text">1. Load .cokz file</span>
           </button>
 
           <button id="import-now" class="btn btn-hero btn-step" type="button" disabled>
@@ -319,6 +358,7 @@
         </div>
         <div id="status" role="status" class="status-console"></div>
       </footer>
+      </div>
     </main>
     <script src="./popup.js"></script>
   </body>

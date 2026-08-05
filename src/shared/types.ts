@@ -2,20 +2,48 @@ export type BrowserTarget = "chromium" | "gecko";
 
 export type SyncDirection = "push" | "pull" | "sync";
 
-export interface StoredSettings {
+export type SettingsScope = "online" | "offline";
+
+export interface OnlineModeSettings {
   syncPassphrase?: string;
+  rememberPassphrase?: boolean;
   supabaseUrl?: string;
   supabaseAnonKey?: string;
   syncId?: string;
-  rememberPassphrase?: boolean;
   autoSyncEnabled?: boolean;
   lastAutoSyncedDate?: string;
   importedDomains?: string[];
   lastSyncedAt?: number;
-  deviceId?: string;
   cookieLedger?: Record<string, CookieRecord>;
-  themePreference?: "dark" | "catppuccin";
+}
+
+export interface OfflineModeSettings {
+  syncPassphrase?: string;
+  rememberPassphrase?: boolean;
+  importedDomains?: string[];
+  lastSyncedAt?: number;
+}
+
+export interface StoredSettings {
   syncMode?: "online" | "offline";
+  themePreference?: "dark" | "catppuccin";
+  deviceId?: string;
+  online?: OnlineModeSettings;
+  offline?: OfflineModeSettings;
+}
+
+/** Flat view returned to a mode-specific UI. */
+export interface ModeSettingsView {
+  syncMode?: "online" | "offline";
+  themePreference?: "dark" | "catppuccin";
+  syncPassphrase?: string;
+  rememberPassphrase?: boolean;
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
+  syncId?: string;
+  autoSyncEnabled?: boolean;
+  lastSyncedAt?: number;
+  hasPassphrase?: boolean;
 }
 
 export interface SerializableCookie {

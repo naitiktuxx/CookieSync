@@ -35,16 +35,17 @@ async function handleMessage(message: unknown): Promise<unknown> {
   }
 
   if (message.type === "set-passphrase") {
-    await engine.setPassphrase(message.passphrase);
+    await engine.setPassphrase(message.settingsScope ?? "online", message.passphrase);
     return { saved: true };
   }
 
   if (message.type === "get-settings") {
-    return engine.getSettings();
+    return engine.getSettings(message.settingsScope ?? "online");
   }
 
   if (message.type === "save-settings") {
     await engine.saveConfiguration({
+      settingsScope: message.settingsScope,
       syncPassphrase: message.passphrase,
       supabaseUrl: message.supabaseUrl,
       supabaseAnonKey: message.supabaseAnonKey,
@@ -104,9 +105,9 @@ function isMessage(
   message: unknown
 ): message is
   | { type: "sync"; direction: SyncDirection }
-  | { type: "set-passphrase"; passphrase: string }
-  | { type: "get-settings" }
-  | { type: "save-settings"; passphrase?: string; supabaseUrl?: string; supabaseAnonKey?: string; syncId?: string; rememberPassphrase?: boolean; autoSyncEnabled?: boolean; themePreference?: "dark" | "catppuccin"; syncMode?: "online" | "offline" }
+  | { type: "set-passphrase"; passphrase: string; settingsScope?: "online" | "offline" }
+  | { type: "get-settings"; settingsScope?: "online" | "offline" }
+  | { type: "save-settings"; settingsScope?: "online" | "offline" | "global"; passphrase?: string; supabaseUrl?: string; supabaseAnonKey?: string; syncId?: string; rememberPassphrase?: boolean; autoSyncEnabled?: boolean; themePreference?: "dark" | "catppuccin"; syncMode?: "online" | "offline" }
   | { type: "get-remote-sites" }
   | { type: "get-offline-sites" }
   | { type: "delete-remote-data" }
@@ -123,6 +124,7 @@ function isMessage(
   const candidate = message as {
     type?: string;
     direction?: string;
+    settingsScope?: unknown;
     passphrase?: string;
     supabaseUrl?: string;
     supabaseAnonKey?: string;

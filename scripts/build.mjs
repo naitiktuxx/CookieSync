@@ -31,7 +31,8 @@ for (const target of targets) {
   await esbuild.build({
     entryPoints: {
       background: path.join(root, "src", "background", "index.ts"),
-      popup: path.join(root, "src", "popup", "popup.ts")
+      popup: path.join(root, "src", "popup", "popup.ts"),
+      offline: path.join(root, "src", "offline", "offline.ts")
     },
     bundle: true,
     sourcemap,
@@ -47,6 +48,10 @@ for (const target of targets) {
   await writeFile(path.join(outdir, "popup.html"), popupHtml.replace("./popup.ts", "./popup.js"));
   await copyFile(path.join(root, "src", "popup", "popup.css"), path.join(outdir, "popup.css"));
   await copyFile(path.join(root, "src", "assets", "icon.png"), path.join(outdir, "icon.png"));
+
+  const offlineHtml = await readFile(path.join(root, "src", "offline", "offline.html"), "utf8");
+  await writeFile(path.join(outdir, "offline.html"), offlineHtml.replace("./offline.ts", "./offline.js"));
+  await copyFile(path.join(root, "src", "offline", "offline.css"), path.join(outdir, "offline.css"));
 
   if (target === "gecko") {
     console.log(`Built gecko extension in dist/gecko`);
