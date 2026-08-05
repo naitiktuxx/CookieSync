@@ -625,7 +625,7 @@ body[data-theme="catppuccin"] .icon-sun {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 275px;
+  max-height: 310px;
   opacity: 1;
   overflow-y: auto;
   overflow-x: hidden;
@@ -1016,7 +1016,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 240px;
+  max-height: 330px;
   min-height: 0;
   overflow-y: auto;
   padding-right: 6px;
@@ -1206,17 +1206,17 @@ body[data-target="chromium"] #settings-section:not(.collapsed) .settings-body {
  * and Clear all local cookies) stay at the exact same Y-position whether settings is collapsed or expanded.
  */
 body[data-target="gecko"] #settings-section.collapsed ~ #site-picker {
-  height: 330px;
+  height: 380px;
   flex-shrink: 0;
 }
 
 body[data-target="gecko"] #settings-section:not(.collapsed) {
-  height: 330px;
+  height: 380px;
   flex-shrink: 0;
 }
 
 body[data-target="gecko"] #settings-section:not(.collapsed) .settings-body {
-  max-height: 280px !important;
+  max-height: 330px !important;
   overflow-y: auto;
 }
 
