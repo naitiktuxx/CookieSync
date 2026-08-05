@@ -1206,17 +1206,17 @@ body[data-target="chromium"] #settings-section:not(.collapsed) .settings-body {
  * and Clear all local cookies) stay at the exact same Y-position whether settings is collapsed or expanded.
  */
 body[data-target="gecko"] #settings-section.collapsed ~ #site-picker {
-  height: 284px;
+  height: 330px;
   flex-shrink: 0;
 }
 
 body[data-target="gecko"] #settings-section:not(.collapsed) {
-  height: 326px;
+  height: 330px;
   flex-shrink: 0;
 }
 
 body[data-target="gecko"] #settings-section:not(.collapsed) .settings-body {
-  max-height: 274px !important;
+  max-height: 280px !important;
   overflow-y: auto;
 }
 
