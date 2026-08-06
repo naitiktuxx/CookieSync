@@ -1,21 +1,40 @@
-# CookieSync - Supabase Database Setup & RLS Schema Guide
+# CookieSync - Supabase Setup & Database Schema
 
-This document contains the complete SQL script and setup guide required to initialize your self-hosted Supabase database for **CookieSync**.
-
----
-
-## 📋 Overview
-
-CookieSync uses a single Supabase table (`public.cookie_sync`) to store client-encrypted cookie payloads. 
-
-### Key Security Guarantees:
-1. **Zero Plaintext Storage**: Only AES-256-GCM encrypted ciphertext payloads are saved.
-2. **Row-Level Security (RLS)**: Scoped access policies enforce that reads, inserts, updates, and deletes require a matching `x-sync-auth` HTTP request header derived from your private passphrase.
-3. **Automated 24-Hour TTL Expiry**: Stale cookie payloads are automatically purged after 24 hours using PostgreSQL cron tasks (when supported by your Supabase project tier).
+This document provides the conceptual request flow, authentication model, and complete SQL setup script required to initialize your self-hosted Supabase database for **CookieSync**.
 
 ---
 
-## 🛠️ Step-by-Step Setup Guide
+## Conceptual Overview
+
+CookieSync uses a single Supabase table (`public.cookie_sync`) to store client-encrypted cookie snapshots.
+
+### Request Flow
+
+```text
+Browser Request (Chromium Publisher / Firefox Receiver)
+                     ↓
+             HTTPS Transport
+                     ↓
+            Supabase REST API
+                     ↓
+Row-Level Security (RLS Header Check)
+                     ↓
+          public.cookie_sync Table
+```
+
+### Conceptual Authentication Model
+
+Access to database records is governed by Row-Level Security rather than traditional user accounts:
+
+- **Why `auth_hash` exists**: It allows PostgreSQL RLS policies to confirm that a read, insert, update, or delete request has authorization to access a specific Sync ID without Supabase ever seeing or holding your raw passphrase.
+- **How `x-sync-auth` works**: When sending a request, the extension attaches an `x-sync-auth` HTTP header derived from your passphrase. The RLS policy compares this header against the `auth_hash` column stored in that row.
+- **Difference from Payload Encryption**: The `auth_hash` acts purely as an access key for the database row. The payload itself is encrypted separately using a distinct key derivation salt and 250,000 iterations. Supabase receives the `auth_hash` to grant API access, but never receives the payload encryption key or plaintext cookies.
+
+For complete cryptographic details and threat model analysis, see [SECURITY.md](./SECURITY.md). For data retention policies, see [PRIVACY.md](./PRIVACY.md).
+
+---
+
+## Step-by-Step Setup Guide
 
 1. Open your [Supabase Dashboard](https://supabase.com/dashboard) and select your project.
 2. Go to **Project Settings → API** and copy:
@@ -26,7 +45,7 @@ CookieSync uses a single Supabase table (`public.cookie_sync`) to store client-e
 
 ---
 
-## 📜 Full SQL Setup Script
+## Full SQL Setup Script
 
 ```sql
 -- ============================================================================
@@ -50,7 +69,7 @@ CREATE INDEX IF NOT EXISTS idx_cookie_sync_updated_at ON public.cookie_sync(upda
 -- 2. Enable Row Level Security (RLS)
 ALTER TABLE public.cookie_sync ENABLE ROW LEVEL SECURITY;
 
--- 3. Drop legacy or insecure open policies if present
+-- 3. Drop legacy or open policies if present
 DROP POLICY IF EXISTS "anon can read cookie sync" ON public.cookie_sync;
 DROP POLICY IF EXISTS "anon can upsert cookie sync" ON public.cookie_sync;
 DROP POLICY IF EXISTS "anon can update cookie sync" ON public.cookie_sync;
@@ -112,7 +131,7 @@ SELECT cron.schedule(
 
 ---
 
-## 🔍 Verification & Testing
+## Verification & Testing
 
 To verify that your RLS policies are working properly from the Supabase SQL Editor:
 
@@ -121,17 +140,17 @@ To verify that your RLS policies are working properly from the Supabase SQL Edit
 SELECT * FROM public.cookie_sync;
 ```
 
-### 2. Manual Emergency Data Clear (If needed)
-If you ever need to clear all synced cookie data manually from the Supabase dashboard:
+### 2. Manual Emergency Data Clear
+To clear all synced cookie payloads manually from the Supabase SQL Editor:
 ```sql
 TRUNCATE TABLE public.cookie_sync;
 ```
 
 ---
 
-## ❓ Troubleshooting `pg_cron`
+## Troubleshooting `pg_cron`
 
 If running `CREATE EXTENSION IF NOT EXISTS pg_cron;` returns an error such as `extension "pg_cron" is not available`:
 - **Reason**: Certain Supabase free tier regions or self-hosted PostgreSQL instances do not enable `pg_cron` by default.
-- **Impact**: The table structure and RLS security policies will still work perfectly for sync uploads and downloads.
-- **Alternative**: Expired records can be deleted directly from the extension UI using the **Delete server data** button in Chromium, or by running the `DELETE FROM public.cookie_sync WHERE updated_at < NOW() - INTERVAL '24 hours';` query manually in your SQL Editor when desired.
+- **Impact**: Table structure and RLS security policies remain functional for sync uploads and downloads.
+- **Alternative**: Expired records can be deleted directly from the extension popup using **Delete server data** in the Chromium Publisher, or by executing `DELETE FROM public.cookie_sync WHERE updated_at < NOW() - INTERVAL '24 hours';` manually in the SQL Editor.
