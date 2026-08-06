@@ -134,7 +134,7 @@ The screenshots below illustrate how CookieSync presents its operational control
 
 | Sync Mode Modal |
 |:---:|
-| ![Choose Sync Mode](./docs/screenshots/sync-mode-selection.png) |
+| <img src="./docs/screenshots/sync-mode-selection.png" width="320" alt="Choose Sync Mode" /> |
 | **Mode Selection Modal**<br>Choose between self-hosted Supabase cloud sync (Online Mode) and local encrypted file transfer (Offline Workspace). |
 
 ### Online Mode (Cloud Sync)
