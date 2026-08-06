@@ -1,14 +1,12 @@
 # CookieSync
 
+<img src="./docs/screenshots/logo.png" width="96" alt="CookieSync Logo" />
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/naitiktuxx/CookieSync)](https://github.com/naitiktuxx/CookieSync/releases/latest)
 [![Total Downloads](https://img.shields.io/github/downloads/naitiktuxx/CookieSync/total)](https://github.com/naitiktuxx/CookieSync/releases)
 
 CookieSync is a lightweight open-source tool for transferring active web sessions securely across different browser engines. By encrypting cookie snapshots client-side before transmission, CookieSync lets you move authenticated site sessions using your own self-hosted Supabase database or air-gapped local files—without exposing unencrypted credentials to servers or local disk storage.
-
-![Choose Sync Mode](./docs/screenshots/sync-mode-selection.png)
-
-*Sync Mode Selection: Choose between self-hosted Supabase cloud sync (Online Mode) or local encrypted file transfer (Offline Workspace).*
 
 ---
 
@@ -130,7 +128,14 @@ For complete project structure and developer workflows, see [CONTRIBUTING.md](./
 
 ## Interface Tour
 
-The screenshots below illustrate how CookieSync presents its operational controls across cloud sync and offline file transfer interfaces:
+The screenshots below illustrate how CookieSync presents its operational controls across mode selection, cloud sync, and offline file transfer interfaces:
+
+### Sync Mode Selection
+
+| Sync Mode Modal |
+|:---:|
+| ![Choose Sync Mode](./docs/screenshots/sync-mode-selection.png) |
+| **Mode Selection Modal**<br>Choose between self-hosted Supabase cloud sync (Online Mode) and local encrypted file transfer (Offline Workspace). |
 
 ### Online Mode (Cloud Sync)
 
