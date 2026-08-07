@@ -34,14 +34,55 @@ For complete cryptographic details and threat model analysis, see [SECURITY.md](
 
 ---
 
-## Step-by-Step Setup Guide
+## Step-by-Step Visual Setup Guide
 
-1. Open your [Supabase Dashboard](https://supabase.com/dashboard) and select your project.
-2. Go to **Project Settings → API** and copy:
-   - **Project URL** (e.g. `https://xyzcompany.supabase.co`)
-   - **`anon` / `public` API key**
-3. Navigate to **SQL Editor** from the left navigation menu.
-4. Click **New Query**, paste the complete SQL script below into the editor, and click **Run**.
+### 1. Account Setup & Sign Up
+Open the [Supabase Dashboard](https://supabase.com/dashboard). If you don't have an account, click **Start your project** or **Sign up** to create one.
+
+<p align="center">
+  <img src="docs/supabase_setup/click_on_start_your_project.png" width="280" alt="Start your project" />
+  <img src="docs/supabase_setup/click_on_sign_up.png" width="280" alt="Click Sign up" />
+  <img src="docs/supabase_setup/create_new_account_by_signing_up.png" width="280" alt="Create new account" />
+</p>
+
+### 2. Organization & Project Provisioning
+Create a new organization (e.g., `cookiesync`) and create a new project (e.g., `CookieSync`).
+
+<p align="center">
+  <img src="docs/supabase_setup/create_%20organisation.png" width="420" alt="Create organization" />
+  <img src="docs/supabase_setup/create_a_new_project.png" width="420" alt="Create new project" />
+</p>
+
+### 3. Database Schema Setup
+Navigate to the **SQL Editor** from the left navigation bar, create a **New Query**, paste the [Full SQL Setup Script](#full-sql-setup-script) below, and click **Run query**.
+
+<p align="center">
+  <img src="docs/supabase_setup/go_to_sql_editor_for_pasting_github_query.png" width="280" alt="Go to SQL Editor" />
+  <img src="docs/supabase_setup/paste_sql_query_from_github_supabase_md.png" width="280" alt="Paste SQL Query" />
+  <img src="docs/supabase_setup/click_on_run_query_button_after_pasting.png" width="280" alt="Run Query" />
+</p>
+
+### 4. Copying Credentials
+Retrieve your **Project URL** and **`anon` / `public` API key** from Supabase:
+- Navigate to **Project Settings → API** to copy the `anon` key.
+- Press `⌘K` (or `Ctrl+K`) search, type `copy`, and select **Copy API URL**.
+
+<p align="center">
+  <img src="docs/supabase_setup/go_to_project_settings_for_getting_anon_key.png" width="280" alt="Go to Project Settings" />
+  <img src="docs/supabase_setup/copy_anon_key_for_pasting_it_in_extension.png" width="280" alt="Copy Anon Key" />
+</p>
+
+<p align="center">
+  <img src="docs/supabase_setup/click_on_search_for_copying_project_url.png" width="420" alt="Search bar" />
+  <img src="docs/supabase_setup/search_copy_api_url_in_settings_for_pasting_in_extension.png" width="420" alt="Copy API URL action" />
+</p>
+
+### 5. Extension Configuration
+Open the CookieSync browser extension popup, expand **ONLINE SETTINGS**, paste your **Supabase URL** and **Supabase Anon Key**, set your **Sync ID** and **Sync Passphrase**, then click **Save**.
+
+<p align="center">
+  <img src="docs/supabase_setup/click_on_save_in_extension_after_filling_reqest.png" width="400" alt="Save Online Settings in CookieSync Extension" />
+</p>
 
 ---
 
