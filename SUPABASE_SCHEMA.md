@@ -64,12 +64,13 @@ Navigate to the **SQL Editor** from the left navigation bar, create a **New Quer
 
 ### 4. Copying Credentials
 Retrieve your **Project URL** and **`anon` / `public` API key** from Supabase:
-- Navigate to **Project Settings → API** to copy the `anon` key.
+- Navigate to **Project Settings → API Keys** to copy the `anon` key.
 - Press `⌘K` (or `Ctrl+K`) search, type `copy`, and select **Copy API URL**.
 
 <p align="center">
-  <img src="docs/supabase_setup/go_to_project_settings_for_getting_anon_key.png" width="280" alt="Go to Project Settings" />
-  <img src="docs/supabase_setup/copy_anon_key_for_pasting_it_in_extension.png" width="280" alt="Copy Anon Key" />
+  <img src="docs/supabase_setup/go_to_project_settings_for_getting_anon_key.png" width="270" alt="Go to Project Settings" />
+  <img src="docs/supabase_setup/after_clicking_on_settings_click_on_api_keys_option.png" width="270" alt="Click API Keys" />
+  <img src="docs/supabase_setup/copy_anon_key_for_pasting_it_in_extension.png" width="270" alt="Copy Anon Key" />
 </p>
 
 <p align="center">

@@ -9,6 +9,7 @@ work/
 outputs/
 *.log
 .DS_Store
+Thumbs.db
 
 # IDE & Workspace Metadata
 .obsidian/
